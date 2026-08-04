@@ -32,24 +32,8 @@ function prompt {
 # Self
 # =================================================================================
 
-function profile_extra_update() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | Invoke-Expression }
-function profile_extra_uninstall() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.ps1 | Invoke-Expression }
-function pseu() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | Invoke-Expression }
-function psee {
-    $extraFile = Join-Path $HOME 'profile_extra.ps1'
-
-    if (-not (Test-Path $extraFile)) {
-        Write-Host "File not found at '$extraFile' - run 'pseu' to install it"
-        return
-    }
-
-    if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
-        Write-Host "VSCode CLI ('code') not found in PATH"
-        return
-    }
-
-    code $extraFile
-}
+function cshdel() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.ps1 | Invoke-Expression }
+function cshup() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | Invoke-Expression }
 
 # =================================================================================
 # Random
@@ -447,7 +431,6 @@ function ddown {
 function ayc {
     gyc
     cyc
-    pseu
 }
 
 function gyc {
