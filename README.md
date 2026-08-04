@@ -13,17 +13,17 @@ Empty `.bash_aliases` if needed:
 
 Install:
 ```sh
-bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)
 ```
 
 Update:
 ```sh
-bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)
 ```
 
 Uninstall:
 ```sh
-bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/uninstall.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.sh)
 ```
 
 ### PowerShell
@@ -35,15 +35,15 @@ $null > $PROFILE
 
 Install:
 ```sh
-irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | iex
 ```
 
 Update:
 ```sh
-irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | iex
 ```
 
 Uninstall:
 ```sh
-irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.ps1 | iex
 ```

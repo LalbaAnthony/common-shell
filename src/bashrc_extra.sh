@@ -25,9 +25,9 @@ shopt -s histappend
 # Self
 # =================================================================================
 
-alias bashrc_extra_update='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.sh)'
-alias bashrc_extra_uninstall='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/uninstall.sh)'
-alias sheu='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.sh)'
+alias bashrc_extra_update='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)'
+alias bashrc_extra_uninstall='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.sh)'
+alias sheu='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)'
 alias shee='nano ~/.bashrc_extra'
 
 # =================================================================================

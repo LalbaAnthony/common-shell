@@ -32,9 +32,9 @@ function prompt {
 # Self
 # =================================================================================
 
-function profile_extra_update() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.ps1 | Invoke-Expression }
-function profile_extra_uninstall() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/uninstall.ps1 | Invoke-Expression }
-function pseu() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.ps1 | Invoke-Expression }
+function profile_extra_update() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | Invoke-Expression }
+function profile_extra_uninstall() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.ps1 | Invoke-Expression }
+function pseu() { Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | Invoke-Expression }
 function psee {
     $extraFile = Join-Path $HOME 'profile_extra.ps1'
 
