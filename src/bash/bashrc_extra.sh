@@ -1,3 +1,13 @@
+# This file is sourced from ~/.bashrc, so it carries no shebang.
+# shellcheck shell=bash
+#
+# File-wide ShellCheck exemptions, all specific to an interactive profile:
+#   SC1091 - sourced paths (e.g. .venv/bin/activate) only exist at runtime.
+#   SC2034 - colour variables are consumed by PS1 and by interactive use.
+#   SC2142 - `$2` inside single-quoted awk programs is an awk field, not an arg.
+#   SC2154 - variables in single-quoted alias bodies are expanded by the subshell.
+# shellcheck disable=SC1091,SC2034,SC2142,SC2154
+
 # =================================================================================
 # Linux config
 # =================================================================================
@@ -98,8 +108,8 @@ extractt() {
             *.7z)        7z x "$1"       ;;
             *.tar.xz)    tar xJf "$1"    ;;
             *.txz)       tar xJf "$1"    ;;
-            *.zst)       unzstd "$1"     ;;
             *.tar.zst)   tar --zstd -xf "$1" ;;
+            *.zst)       unzstd "$1"     ;;
             *)           echo "'$1' is not handled by extract()" ;;
         esac
     else
@@ -410,6 +420,7 @@ derase() {
         return 1
     fi
 
+    # shellcheck disable=SC2046 # word splitting is wanted: one arg per volume ID
     docker volume rm $(docker volume ls -q) 2>/dev/null
 
     echo "All Docker volumes removed."

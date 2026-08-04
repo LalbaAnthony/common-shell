@@ -5,12 +5,12 @@ $Repo   = "LalbaAnthony/antho-common-shell"
 $Branch = "main"
 
 $ExtraFile = Join-Path $HOME "profile_extra.ps1"
-$ExtraUrl  = "https://raw.githubusercontent.com/$Repo/$Branch/src/profile_extra.ps1"
+$ExtraUrl  = "https://raw.githubusercontent.com/$Repo/$Branch/src/powershell/profile_extra.ps1"
 
 $ProfileFile = $PROFILE
 $ProfileHook = 'if (Test-Path "$HOME\profile_extra.ps1") { . "$HOME\profile_extra.ps1" }'
 
-function Download-Extra {
+function Get-Extra {
     Write-Host "Deleting existing PowerShell extra if it exists..."
     if (Test-Path $ExtraFile) { Remove-Item -Path $ExtraFile -Force }
 
@@ -33,16 +33,16 @@ function Register-InProfile {
     }
 }
 
-function Reload-Shell {
+function Invoke-ProfileReload {
     Write-Host "Reloading profile..."
     # dot-sourcing may not propagate to the parent shell when run via iex
     . $ProfileFile
 }
 
 function Main {
-    Download-Extra
+    Get-Extra
     Register-InProfile
-    Reload-Shell
+    Invoke-ProfileReload
     Write-Host "PowerShell extra installed successfully!"
 }
 

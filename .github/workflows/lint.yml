@@ -1,0 +1,41 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SHELLCHECK_VERSION: v0.11.0
+  PSSA_VERSION: 1.25.0
+
+jobs:
+  bash:
+    name: ShellCheck (bash)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/lint-bash.sh
+
+  powershell:
+    name: PSScriptAnalyzer (powershell)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/powershell/Modules
+          key: pssa-${{ runner.os }}-${{ env.PSSA_VERSION }}
+
+      - shell: pwsh
+        run: ./.github/scripts/lint-powershell.ps1

@@ -5,7 +5,7 @@ set -euo pipefail
 REPO="LalbaAnthony/antho-common-shell"
 BRANCH="main"
 
-EXTRA_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/src/bashrc_extra.sh"
+EXTRA_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/src/bash/bashrc_extra.sh"
 EXTRA_FILE="$HOME/.bashrc_extra"
 
 BASHRC_FILE="$HOME/.bashrc"
