@@ -1,7 +1,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$Repo   = "LalbaAnthonyantho-common-shell"
+$Repo   = "LalbaAnthony/antho-common-shell"
 $Branch = "main"
 
 $ExtraFile = Join-Path $HOME "profile_extra.ps1"

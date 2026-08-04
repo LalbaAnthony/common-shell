@@ -35,15 +35,15 @@ $null > $PROFILE
 
 Install:
 ```sh
-irm https://raw.githubusercontent.com/LalbaAnthonyantho-common-shell/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.ps1 | iex
 ```
 
 Update:
 ```sh
-irm https://raw.githubusercontent.com/LalbaAnthonyantho-common-shell/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/install.ps1 | iex
 ```
 
 Uninstall:
 ```sh
-irm https://raw.githubusercontent.com/LalbaAnthonyantho-common-shell/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/uninstall.ps1 | iex
 ```
