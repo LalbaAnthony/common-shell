@@ -57,6 +57,7 @@ function .. { Set-Location .. }
 function ... { Set-Location ../.. }
 function .... { Set-Location ../../.. }
 function ..... { Set-Location ../../../.. }
+function home { Set-Location ~ }
 
 # Random
 function again { Invoke-History }

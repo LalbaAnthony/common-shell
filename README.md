@@ -40,7 +40,7 @@ irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scrip
 
 ```sh
 rm -f ~/.bashrc_extra # Remove the old bashrc_extra file
-sed -i '0,/bashrc_extra/{/bashrc_extra/d;}' fichier.sh # Remove the old hook
+sed -i '0,/bashrc_extra/{/bashrc_extra/d;}' ~/.bashrc # Remove the old hook
 bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh) # Brand new install
 ```
 

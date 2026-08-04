@@ -55,6 +55,7 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias www='cd /var/www'
 alias html='cd /var/www/html'
+alias home='cd ~'
 
 # Random
 alias cls='clear'
