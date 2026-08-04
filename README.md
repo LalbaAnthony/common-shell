@@ -11,13 +11,11 @@ Empty `.bash_aliases` if needed:
 > ~/.bash_aliases
 ```
 
-Install or Update:
 ```sh
+# Install or Update
 bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)
-```
 
-Uninstall:
-```sh
+# Uninstall
 bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.sh)
 ```
 
@@ -28,12 +26,10 @@ Empty `$PROFILE` if needed:
 $null > $PROFILE
 ```
 
-Install or Update:
-```sh
+```powershell
+# Install or Update
 irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | iex
-```
 
-Uninstall:
-```sh
+# Uninstall
 irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.ps1 | iex
 ```
