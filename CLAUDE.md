@@ -80,6 +80,8 @@ Install flow, identical in shape on both platforms:
 3. It appends a one-line hook to the user's rc file (`~/.bashrc` / `$PROFILE`) if not already present.
 4. It re-sources the rc file.
 
+Uninstall reverses steps 2 and 3: it deletes the profile file, then removes the hook line from the rc file along with the blank separator line the installer wrote before it, leaving the rc file byte-identical to its pre-install state. It rewrites the rc file in place (not via a temp file and `mv`) so ownership and mode are preserved. Every step is a no-op with a message when its target is already absent, so uninstall is idempotent.
+
 The installed profiles define `cshup` and `cshdel`, which re-run the install and uninstall scripts — so update is just re-install.
 
 CI has two independent jobs (`bash`, `powershell`) on `ubuntu-latest`, each a single call into `.github/scripts/`. The scripts are the interface; the workflow only supplies pins and caching. Both scripts emit GitHub annotations when `GITHUB_ACTIONS=true` and plain `file:line:col: severity: message` otherwise.
@@ -110,7 +112,7 @@ CI has two independent jobs (`bash`, `powershell`) on `ubuntu-latest`, each a si
 
 - **`.gitattributes` enforces line endings**: `*.ps1` → CRLF, `*.sh` → LF. Do not normalise these away — a CRLF shebang breaks Bash scripts on Linux.
 - **`src/bash/bashrc_extra.sh` has no shebang** by design (it is sourced). Its ShellCheck header directives must stay above the first command or they stop applying file-wide.
-- **Uninstall is incomplete.** Both uninstallers delete the profile file but leave the hook line in `~/.bashrc` / `$PROFILE`. Removing the hook is a manual step.
+- **The hook string is duplicated across four files and must stay byte-identical.** `scripts/install.sh` / `scripts/uninstall.sh` share `BASHRC_HOOK`, and `scripts/install.ps1` / `scripts/uninstall.ps1` share `$ProfileHook`. Uninstall matches the hook by exact line equality, so editing the string in an installer without editing its uninstaller silently strands the hook in the user's rc file.
 - **Asymmetric install paths**: Bash installs to `~/.bashrc_extra` (dotfile), PowerShell to `$HOME/profile_extra.ps1` (no dot).
 - **`scripts/install.sh` assumes `~/.bashrc` exists**; `grep` emits a stderr error when it does not, though the append still creates the file. `scripts/install.ps1` explicitly creates `$PROFILE` when missing.
 - **Lint target discovery uses `git ls-files --cached --others --exclude-standard`.** Untracked-but-not-ignored files *are* linted; files deleted from the working tree but still in the index are skipped. A file added to `.gitignore` silently drops out of CI coverage.

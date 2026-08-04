@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker run *)"
+      "Bash(bash .github/scripts/*.sh)",
+      "Bash(bash .github/scripts/lint-bash.sh)",
+      "Bash(docker run *)",
+      "Bash(GITHUB_ACTIONS=true bash .github/scripts/*.sh)",
+      "Bash(grep -n * src/**)",
+      "Bash(MSYS_NO_PATHCONV=1 docker run --rm -v \"*\" -w * koalaman/shellcheck:* *)",
+      "Bash(powershell.exe -NoProfile -Command 'Write-Output \"HOME=$HOME\"; Write-Output \"PROFILE=[$PROFILE]\"')",
+      "Bash(powershell.exe -NoProfile -Command \"\\(Get-Module -ListAvailable PSScriptAnalyzer | Select-Object -First 1\\).Version.ToString\\(\\)\")",
+      "Bash(powershell.exe -NoProfile -Command \"if \\(Get-Module -ListAvailable PSScriptAnalyzer\\) { 'installed' } else { 'not installed' }\")",
+      "Bash(powershell.exe -NoProfile -Command \"Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop; 'ok'\")",
+      "Bash(powershell.exe -NoProfile -Command \"Invoke-ScriptAnalyzer -Path * -Recurse *\")",
+      "Bash(powershell.exe -NoProfile -File .github/scripts/*.ps1)",
+      "Bash(powershell.exe -NoProfile -File .github/scripts/lint-powershell.ps1)"
     ]
   }
 }
