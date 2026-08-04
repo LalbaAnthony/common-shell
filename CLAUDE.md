@@ -7,7 +7,7 @@ Personal shell configuration distributed as two sourceable profile files — one
 ## Tech stack
 
 - **Bash** — Bash, not POSIX `sh` (uses `shopt`, `[[`, arrays, process substitution). No Bash-4-only syntax is present, so no minimum minor version is asserted. `src/bash/bashrc_extra.sh` is sourced, not executed; `scripts/*.sh` declare `#!/bin/bash`.
-- **PowerShell** — `src/powershell/profile_extra.ps1` targets Windows PowerShell 5.1 and PowerShell 7 (no PS7-only syntax present).
+- **PowerShell** — `src/pwsh/profile_extra.ps1` targets Windows PowerShell 5.1 and PowerShell 7 (no PS7-only syntax present).
 - **No package manager, no manifest, no build system.** No `package.json`, `composer.json`, `Makefile`, or equivalent exists.
 - **CI**: GitHub Actions. ShellCheck pinned to `v0.11.0` (Docker image), PSScriptAnalyzer pinned to `1.25.0`.
 
@@ -15,13 +15,13 @@ Personal shell configuration distributed as two sourceable profile files — one
 
 ```
 src/bash/bashrc_extra.sh          # Bash profile — the deliverable, installed to ~/.bashrc_extra
-src/powershell/profile_extra.ps1  # PowerShell profile — installed to $HOME/profile_extra.ps1
+src/pwsh/profile_extra.ps1        # PowerShell profile — installed to $HOME/profile_extra.ps1
 scripts/install.sh                # Bash installer (curl | bash)
 scripts/uninstall.sh
 scripts/install.ps1               # PowerShell installer (irm | iex)
 scripts/uninstall.ps1
 .github/scripts/lint-bash.sh      # ShellCheck runner — all lint logic lives here, not in the workflow
-.github/scripts/lint-powershell.ps1
+.github/scripts/lint-pwsh.ps1
 .github/workflows/lint.yml        # Thin: triggers, version pins, module cache
 PSScriptAnalyzerSettings.psd1     # PSSA rule config
 .gitattributes                    # Enforces line endings — see Gotchas
@@ -38,7 +38,7 @@ bash .github/scripts/lint-bash.sh
 ```
 
 ```powershell
-./.github/scripts/lint-powershell.ps1
+./.github/scripts/lint-pwsh.ps1
 ```
 
 Lint specific files:
@@ -48,7 +48,7 @@ bash .github/scripts/lint-bash.sh src/bash/bashrc_extra.sh scripts/install.sh
 ```
 
 ```powershell
-./.github/scripts/lint-powershell.ps1 -Path src/powershell/profile_extra.ps1
+./.github/scripts/lint-pwsh.ps1 -Path src/pwsh/profile_extra.ps1
 ```
 
 Reproduce CI annotation output locally:
@@ -84,7 +84,7 @@ Uninstall reverses steps 2 and 3: it deletes the profile file, then removes the 
 
 The installed profiles define `cshup` and `cshdel`, which re-run the install and uninstall scripts — so update is just re-install.
 
-CI has two independent jobs (`bash`, `powershell`) on `ubuntu-latest`, each a single call into `.github/scripts/`. The scripts are the interface; the workflow only supplies pins and caching. Both scripts emit GitHub annotations when `GITHUB_ACTIONS=true` and plain `file:line:col: severity: message` otherwise.
+CI has two independent jobs (`bash`, `pwsh`) on `ubuntu-latest`, each a single call into `.github/scripts/`. The scripts are the interface; the workflow only supplies pins and caching. Both scripts emit GitHub annotations when `GITHUB_ACTIONS=true` and plain `file:line:col: severity: message` otherwise.
 
 ## Conventions
 
@@ -104,8 +104,8 @@ CI has two independent jobs (`bash`, `powershell`) on `ubuntu-latest`, each a si
 - Installers rely only on `$HOME` / `$PROFILE` / `$env:USERPROFILE`.
 - Lint tooling:
   - `lint-bash.sh` requires **Docker** by default. Set `SHELLCHECK_BIN=/path/to/shellcheck` to use a local binary instead (results only match CI if the version matches). Overrides: `SHELLCHECK_VERSION`, `SHELLCHECK_SEVERITY`.
-  - `lint-powershell.ps1` installs PSScriptAnalyzer to `CurrentUser` scope on first run. Override the pin with `-Version` or `$env:PSSA_VERSION`.
-- External runtime dependency: the `ayc` / `gyc` / `cyc` functions in `src/powershell/profile_extra.ps1` shell out to a **separate** `antho-scripts` repository expected at `%USERPROFILE%\projects\antho-scripts\`. They no-op with a message when absent.
+  - `lint-pwsh.ps1` installs PSScriptAnalyzer to `CurrentUser` scope on first run. Override the pin with `-Version` or `$env:PSSA_VERSION`.
+- External runtime dependency: the `ayc` / `gyc` / `cyc` functions in `src/pwsh/profile_extra.ps1` shell out to a **separate** `antho-scripts` repository expected at `%USERPROFILE%\projects\antho-scripts\`. They no-op with a message when absent.
 - The profiles reference many external CLIs (`docker`, `git`, `php`, `artisan`, `wp`, `npm`, `yarn`, `npx`, `python`, `certbot`, `openssl`, `mysql`). None are validated at source time; individual aliases fail if the tool is missing.
 
 ## Gotchas

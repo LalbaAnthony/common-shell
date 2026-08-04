@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: bash .github/scripts/lint-bash.sh
 
-  powershell:
+  pwsh:
     name: PSScriptAnalyzer (powershell)
     runs-on: ubuntu-latest
     steps:
@@ -38,4 +38,4 @@ jobs:
           key: pssa-${{ runner.os }}-${{ env.PSSA_VERSION }}
 
       - shell: pwsh
-        run: ./.github/scripts/lint-powershell.ps1
+        run: ./.github/scripts/lint-pwsh.ps1

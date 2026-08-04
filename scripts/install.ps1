@@ -5,7 +5,7 @@ $Repo   = "LalbaAnthony/antho-common-shell"
 $Branch = "main"
 
 $ExtraFile = Join-Path $HOME "profile_extra.ps1"
-$ExtraUrl  = "https://raw.githubusercontent.com/$Repo/$Branch/src/powershell/profile_extra.ps1"
+$ExtraUrl  = "https://raw.githubusercontent.com/$Repo/$Branch/src/pwsh/profile_extra.ps1"
 
 $ProfileFile = $PROFILE
 $ProfileHook = 'if (Test-Path "$HOME\profile_extra.ps1") { . "$HOME\profile_extra.ps1" }'

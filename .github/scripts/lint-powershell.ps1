@@ -17,7 +17,7 @@
     PSScriptAnalyzer version to pin. Defaults to $env:PSSA_VERSION, then 1.25.0.
 
 .EXAMPLE
-    ./.github/scripts/lint-powershell.ps1
+    ./.github/scripts/lint-pwsh.ps1
 #>
 #Requires -Version 5.1
 
