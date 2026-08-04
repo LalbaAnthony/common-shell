@@ -11,12 +11,7 @@ Empty `.bash_aliases` if needed:
 > ~/.bash_aliases
 ```
 
-Install:
-```sh
-bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)
-```
-
-Update:
+Install or Update:
 ```sh
 bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)
 ```
@@ -33,12 +28,7 @@ Empty `$PROFILE` if needed:
 $null > $PROFILE
 ```
 
-Install:
-```sh
-irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | iex
-```
-
-Update:
+Install or Update:
 ```sh
 irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | iex
 ```
