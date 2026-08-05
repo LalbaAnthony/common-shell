@@ -1,8 +1,3 @@
-function ayc {
-    gyc
-    cyc
-}
-
 function gyc {
     $scriptPaths = @(
         (Join-Path $env:USERPROFILE 'projects\antho-scripts\git\git_sync_projects.py')
