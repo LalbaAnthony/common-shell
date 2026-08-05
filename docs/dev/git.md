@@ -34,7 +34,7 @@ Update `main` using `develop`:
 ```sh
 git fetch
 
-# Keep preprod and main up to date with develop
+# Keep main up to date with develop
 git checkout develop
 git pull --rebase
 git pull origin main 
