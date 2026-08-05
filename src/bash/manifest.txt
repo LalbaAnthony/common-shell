@@ -1,0 +1,24 @@
+# Concatenation order for ~/.bashrc_extra, top to bottom.
+#
+# One filename per line, relative to src/bash/. Blank lines and everything
+# after a '#' are ignored. Filenames must not contain whitespace.
+#
+# Every *.sh file in this directory must be listed here exactly once:
+# .github/scripts/check-manifests.sh fails the build otherwise, because an
+# unlisted part is silently dropped from every install.
+
+core.sh
+self.sh
+random.sh
+network.sh
+python.sh
+node.sh
+git.sh
+claude.sh
+docker.sh
+apache.sh
+sql.sh
+certbot.sh
+php.sh
+laravel.sh
+agoravita.sh

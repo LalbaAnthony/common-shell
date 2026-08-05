@@ -23,6 +23,13 @@ env:
   PSSA_VERSION: 1.25.0
 
 jobs:
+  manifests:
+    name: Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/check-manifests.sh
+
   bash:
     name: ShellCheck (bash)
     runs-on: ubuntu-latest

@@ -1,0 +1,19 @@
+# Concatenation order for $HOME/profile_extra.ps1, top to bottom.
+#
+# One filename per line, relative to src/pwsh/. Blank lines and everything
+# after a '#' are ignored. Filenames must not contain whitespace.
+#
+# Every *.ps1 file in this directory must be listed here exactly once:
+# .github/scripts/check-manifests.sh fails the build otherwise, because an
+# unlisted part is silently dropped from every install.
+
+core.ps1
+self.ps1
+random.ps1
+network.ps1
+python.ps1
+node.ps1
+git.ps1
+claude.ps1
+docker.ps1
+scripts.ps1

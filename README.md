@@ -2,6 +2,25 @@
 
 Useful aliases and functions to boost your productivity in the terminal.
 
+## 📂 Layout
+
+Each profile lives as one file per section under `src/`. The installer downloads
+`manifest.txt`, then the parts it names, and concatenates them into the single
+file your shell sources — so your home directory still holds exactly one file
+per shell.
+
+| Repo | Installed to |
+| --- | --- |
+| `src/bash/manifest.txt` + `src/bash/*.sh` | `~/.bashrc_extra` |
+| `src/pwsh/manifest.txt` + `src/pwsh/*.ps1` | `$HOME/profile_extra.ps1` |
+
+Adding a section takes two edits: create the part file **and** list it in that
+directory's `manifest.txt`. The manifest sets the concatenation order, and an
+unlisted part is silently dropped from every install — CI fails the build if the
+two ever disagree.
+
+Do not edit the installed `*_extra` file directly; the next `cshup` overwrites it.
+
 ## 🚀 Setup
 
 ### Bash

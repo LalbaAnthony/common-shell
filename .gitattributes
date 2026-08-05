@@ -1,3 +1,5 @@
 * text=auto
 *.ps1 text eol=crlf
 *.sh text eol=lf
+# Read line-by-line by both installers; keep it LF everywhere.
+manifest.txt text eol=lf
