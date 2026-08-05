@@ -32,6 +32,14 @@ fail() {
     status=1
 }
 
+# printf '%s\n' "" emits a blank line, which comm would then read as a real
+# entry named "". Emit nothing for an empty list instead.
+emit() {
+    if [ -n "$1" ]; then
+        printf '%s\n' "$1"
+    fi
+}
+
 check_dir() {
     local dir=$1 ext=$2
     local manifest="${dir}/manifest.txt"
@@ -66,13 +74,22 @@ check_dir() {
     fi
 
     # Matches the lint scripts' discovery so a part is checked as soon as it
-    # exists, committed or not.
+    # exists, committed or not. The existence test drops paths still in the
+    # index but already gone from the working tree - without it a rename that
+    # is not yet staged reports every old name as an unlisted part.
     local present
-    present="$(git ls-files --cached --others --exclude-standard "${dir}/*${ext}" | sed 's|.*/||' | sort)"
+    present="$(git ls-files --cached --others --exclude-standard "${dir}/*${ext}" |
+        while IFS= read -r path; do
+            # An `&&` here would leave the loop exiting 1 on a missing final
+            # path, which `set -o pipefail` turns into a silent abort.
+            if [ -f "$path" ]; then
+                printf '%s\n' "${path##*/}"
+            fi
+        done | sort -u)"
 
     local unlisted missing name
-    unlisted="$(comm -13 <(printf '%s\n' "$listed" | sort -u) <(printf '%s\n' "$present"))"
-    missing="$(comm -23 <(printf '%s\n' "$listed" | sort -u) <(printf '%s\n' "$present"))"
+    unlisted="$(comm -13 <(emit "$listed" | sort -u) <(emit "$present"))"
+    missing="$(comm -23 <(emit "$listed" | sort -u) <(emit "$present"))"
 
     if [ -n "$unlisted" ]; then
         while IFS= read -r name; do

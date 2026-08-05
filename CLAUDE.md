@@ -17,14 +17,14 @@ In the repository each profile is **split into one part file per section**; the 
 
 ```
 src/bash/manifest.txt             # Ordered part list — drives concatenation into ~/.bashrc_extra
-src/bash/core.sh                  # Prompt + history; carries the file-wide ShellCheck header
-src/bash/self.sh                  # One file per banner section: self, random, network, python,
-src/bash/random.sh                #   node, git, claude, docker, apache, sql, certbot, php,
-src/bash/…                        #   laravel, agoravita
+src/bash/000-core.sh              # Prompt + history; carries the file-wide ShellCheck header
+src/bash/010-self.sh              # One file per banner section, prefix stepping by 10:
+src/bash/020-random.sh            #   self, random, network, python, node, git, claude, docker,
+src/bash/…                        #   apache, sql, certbot, php, laravel, agoravita (up to 140-)
 src/pwsh/manifest.txt             # Ordered part list — concatenated into $HOME/profile_extra.ps1
-src/pwsh/core.ps1                 # prompt function
-src/pwsh/self.ps1                 # self, random, network, python, node, git, claude, docker, scripts
-src/pwsh/…
+src/pwsh/000-core.ps1             # prompt function
+src/pwsh/010-self.ps1             # self, random, network, python, node, git, claude, docker,
+src/pwsh/…                        #   scripts (up to 090-)
 scripts/install.sh                # Bash installer (curl | bash)
 scripts/uninstall.sh
 scripts/install.ps1               # PowerShell installer (irm | iex)
@@ -108,10 +108,11 @@ CI has three independent jobs (`manifests`, `bash`, `pwsh`) on `ubuntu-latest`, 
 ## Conventions
 
 - **One part file per banner.** Each part still opens with its `# ====…` banner comment (`Self`, `Random`, `Network`, `Python`, `Node`, `Git`, `Claude`, `Docker`, …), so the concatenated result reads exactly like the old single file. Add new aliases and functions to the part that matches, not to a new file.
-- **A new section is two edits.** Create `src/<shell>/<name>.<ext>` *and* add it to that directory's `manifest.txt`. Neither alone works: an unlisted part is silently dropped from every install, a listed-but-absent part 404s the install. `check-manifests.sh` fails the build on either.
+- **A new section is two edits.** Create `src/<shell>/<NNN>-<name>.<ext>` *and* add it to that directory's `manifest.txt`. Neither alone works: an unlisted part is silently dropped from every install, a listed-but-absent part 404s the install. `check-manifests.sh` fails the build on either.
+- **Numeric prefixes step by 10** (`000-`, `010-`, … `140-`) so a section can be slotted between two existing ones without renumbering. They exist to make a directory listing read in install order — the manifest, not the prefix, is what the installer actually reads. Nothing enforces that the two agree on order, so keep them in sync by hand when inserting.
 - **PowerShell function naming.** PSScriptAnalyzer enforces `PSUseApprovedVerbs` and `PSUseShouldProcessForStateChangingFunctions` on `scripts/`. A new `Verb-Noun` function must use an approved verb that is *not* state-changing (`New`, `Set`, `Remove`, `Start`, `Stop`, `Restart`, `Reset`, `Update` trigger the ShouldProcess rule). `Get`, `Invoke`, `Register`, `Uninstall` satisfy both. Single-word function names (`Main`, `prompt`, `cshup`) are exempt from the verb rule.
 - **PSSA exclusions** (`PSScriptAnalyzerSettings.psd1`): `PSAvoidUsingWriteHost` and `PSAvoidUsingInvokeExpression` are globally disabled — coloured interactive output and `irm | iex` installs are intentional. Severity threshold is `Error` + `Warning`.
-- **ShellCheck exemptions are file-scoped, not repo-wide.** There is no `.shellcheckrc`. Every `src/bash/*.sh` part carries its own two-line header (`# shellcheck shell=bash`, then `disable=SC1091,SC2034,SC2142,SC2154`) because each part is linted on its own, is sourced rather than executed, and is full of single-quoted alias bodies. `core.sh` additionally carries the prose explaining what each code is for; it is first in the manifest, so that explanation lands at the top of the generated file. Everything under `scripts/` lints strictly. Suppress new findings inline at the line, not globally.
+- **ShellCheck exemptions are file-scoped, not repo-wide.** There is no `.shellcheckrc`. Every `src/bash/*.sh` part carries its own two-line header (`# shellcheck shell=bash`, then `disable=SC1091,SC2034,SC2142,SC2154`) because each part is linted on its own, is sourced rather than executed, and is full of single-quoted alias bodies. `000-core.sh` additionally carries the prose explaining what each code is for; it is first in the manifest, so that explanation lands at the top of the generated file. Everything under `scripts/` lints strictly. Suppress new findings inline at the line, not globally.
 - Comments in English.
 
 ## Testing

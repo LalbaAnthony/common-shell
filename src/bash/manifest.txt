@@ -3,22 +3,26 @@
 # One filename per line, relative to src/bash/. Blank lines and everything
 # after a '#' are ignored. Filenames must not contain whitespace.
 #
+# The numeric prefixes step by 10 so a new section can be slotted between two
+# existing ones without renumbering. This file, not the prefix, is what the
+# installer reads - keep the two in the same order.
+#
 # Every *.sh file in this directory must be listed here exactly once:
 # .github/scripts/check-manifests.sh fails the build otherwise, because an
 # unlisted part is silently dropped from every install.
 
-core.sh
-self.sh
-random.sh
-network.sh
-python.sh
-node.sh
-git.sh
-claude.sh
-docker.sh
-apache.sh
-sql.sh
-certbot.sh
-php.sh
-laravel.sh
-agoravita.sh
+000-core.sh
+010-self.sh
+020-random.sh
+030-network.sh
+040-python.sh
+050-node.sh
+060-git.sh
+070-claude.sh
+080-docker.sh
+090-apache.sh
+100-sql.sh
+110-certbot.sh
+120-php.sh
+130-laravel.sh
+140-agoravita.sh
