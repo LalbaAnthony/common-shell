@@ -1,10 +1,6 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-# =================================================================================
-# Git
-# =================================================================================
-
 alias gs='git status -sb'
 alias ga='git add .'
 alias gc='git commit -m'

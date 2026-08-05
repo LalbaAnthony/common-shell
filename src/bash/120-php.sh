@@ -1,10 +1,6 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-# =================================================================================
-# PHP
-# =================================================================================
-
 # PHP
 alias phpswitch='sudo update-alternatives --config php'
 alias phplist='sudo update-alternatives --list php'

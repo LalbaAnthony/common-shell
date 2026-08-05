@@ -1,10 +1,6 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-# =================================================================================
-# Docker
-# =================================================================================
-
 alias dcb='docker compose up --build -d'
 alias dps='docker ps'
 alias dpa='docker ps -a'

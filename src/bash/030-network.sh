@@ -1,10 +1,6 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-# =================================================================================
-# Network
-# =================================================================================
-
 alias ipl='hostname -I' # Get local IP address
 alias ipp='curl ifconfig.me && echo' # Get public IP address
 alias ports='netstat -tulanp' # List all listening ports

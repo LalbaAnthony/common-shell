@@ -9,10 +9,6 @@
 #   SC2154 - variables in single-quoted alias bodies are expanded by the subshell.
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-# =================================================================================
-# Linux config
-# =================================================================================
-
 RED='\[\e[31m\]'
 GREEN='\[\e[32m\]'
 YELLOW='\[\e[33m\]'

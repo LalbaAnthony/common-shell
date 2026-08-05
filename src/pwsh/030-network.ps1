@@ -1,7 +1,3 @@
-# =================================================================================
-# Network
-# =================================================================================
-
 function ports { Get-NetTCPConnection -State Listen | Sort-Object LocalPort }
 
 function killport {

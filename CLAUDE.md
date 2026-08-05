@@ -18,7 +18,7 @@ In the repository each profile is **split into one part file per section**; the 
 ```
 src/bash/manifest.txt             # Ordered part list — drives concatenation into ~/.bashrc_extra
 src/bash/000-core.sh              # Prompt + history; carries the file-wide ShellCheck header
-src/bash/010-self.sh              # One file per banner section, prefix stepping by 10:
+src/bash/010-self.sh              # Prefix stepping by 10:
 src/bash/020-random.sh            #   self, random, network, python, node, git, claude, docker,
 src/bash/…                        #   apache, sql, certbot, php, laravel, agoravita (up to 140-)
 src/pwsh/manifest.txt             # Ordered part list — concatenated into $HOME/profile_extra.ps1
@@ -107,7 +107,6 @@ CI has three independent jobs (`manifests`, `bash`, `pwsh`) on `ubuntu-latest`, 
 
 ## Conventions
 
-- **One part file per banner.** Each part still opens with its `# ====…` banner comment (`Self`, `Random`, `Network`, `Python`, `Node`, `Git`, `Claude`, `Docker`, …), so the concatenated result reads exactly like the old single file. Add new aliases and functions to the part that matches, not to a new file.
 - **A new section is two edits.** Create `src/<shell>/<NNN>-<name>.<ext>` *and* add it to that directory's `manifest.txt`. Neither alone works: an unlisted part is silently dropped from every install, a listed-but-absent part 404s the install. `check-manifests.sh` fails the build on either.
 - **Numeric prefixes step by 10** (`000-`, `010-`, … `140-`) so a section can be slotted between two existing ones without renumbering. They exist to make a directory listing read in install order — the manifest, not the prefix, is what the installer actually reads. Nothing enforces that the two agree on order, so keep them in sync by hand when inserting.
 - **PowerShell function naming.** PSScriptAnalyzer enforces `PSUseApprovedVerbs` and `PSUseShouldProcessForStateChangingFunctions` on `scripts/`. A new `Verb-Noun` function must use an approved verb that is *not* state-changing (`New`, `Set`, `Remove`, `Start`, `Stop`, `Restart`, `Reset`, `Update` trigger the ShouldProcess rule). `Get`, `Invoke`, `Register`, `Uninstall` satisfy both. Single-word function names (`Main`, `prompt`, `cshup`) are exempt from the verb rule.

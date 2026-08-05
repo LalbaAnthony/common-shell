@@ -1,7 +1,3 @@
-# =================================================================================
-# Windows config
-# =================================================================================
-
 function prompt {
     $isAdmin = ([Security.Principal.WindowsPrincipal] `
         [Security.Principal.WindowsIdentity]::GetCurrent()
