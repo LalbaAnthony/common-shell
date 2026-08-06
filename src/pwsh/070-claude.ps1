@@ -1,4 +1,5 @@
 function cusage { npx ccusage@latest }
+function cvscode { cd "$HOME/.claude" && code . }
 
 function ccontinue {
     # resolve most recent session id for cwd, then hand it to the URI handler
