@@ -8,7 +8,7 @@ artlogs() {
 }
 
 artlogsc() {
-    > storage/logs/laravel.log
+    : > storage/logs/laravel.log
 }
 
 artperms() {
