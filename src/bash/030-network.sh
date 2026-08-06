@@ -16,3 +16,12 @@ killport() {
 
     sudo lsof -t -i:"$1" | xargs sudo kill -9
 }
+
+nlighthouse() {
+    if [ -z "$1" ]; then
+        echo "Usage: nlighthouse <url>"
+        return 1
+    fi
+
+    npm install -g lighthouse && lighthouse "$1"
+}

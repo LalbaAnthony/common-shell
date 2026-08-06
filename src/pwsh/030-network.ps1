@@ -28,3 +28,15 @@ function killport {
         }
     }
 }
+
+function nlighthouse {
+    param($url)
+
+    if (-not $url) {
+        Write-Host "Usage: nlighthouse <url>"
+        return
+    }
+
+    npm install -g lighthouse | Out-Null
+    lighthouse $url
+}
