@@ -17,8 +17,7 @@
       "Bash(command -v shellcheck docker)",
       "Bash(docker --version)",
       "Bash(powershell -NoProfile -Command ' *)",
-      "Bash(bash \"/c/Users/A40C9~1.LAL/AppData/Local/Temp/claude/c--Users-a-lalba-projects-antho-common-shell/761984b6-e689-4d07-bd26-7abaa7413078/scratchpad/test-partial.sh\")",
-      "Bash(bash \"/c/Users/A40C9~1.LAL/AppData/Local/Temp/claude/c--Users-a-lalba-projects-antho-common-shell/761984b6-e689-4d07-bd26-7abaa7413078/scratchpad/test-install-pwsh.sh\")"
+      "Bash(grep -E 'identical|syntax ok|^exit=|lines:|mode:|leftover|preserved|restored|removed|hook|^1$|^alias|^function')"
     ]
   }
 }

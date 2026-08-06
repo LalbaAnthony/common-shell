@@ -8,8 +8,8 @@ In the repository each profile is **split into one part file per section**; the 
 
 ## Tech stack
 
-- **Bash** — Bash, not POSIX `sh` (uses `shopt`, `[[`, arrays, process substitution). No Bash-4-only syntax is present, so no minimum minor version is asserted. `src/bash/bashrc_extra.sh` is sourced, not executed; `scripts/*.sh` declare `#!/bin/bash`.
-- **PowerShell** — `src/pwsh/profile_extra.ps1` targets Windows PowerShell 5.1 and PowerShell 7 (no PS7-only syntax present).
+- **Bash** — Bash, not POSIX `sh` (uses `shopt`, `[[`, arrays, process substitution). No Bash-4-only syntax is present, so no minimum minor version is asserted. `src/bash/*.sh` are sourced, not executed; `scripts/*.sh` declare `#!/bin/bash`.
+- **PowerShell** — `src/pwsh/*.ps1` target Windows PowerShell 5.1 and PowerShell 7 (no PS7-only syntax present).
 - **No package manager, no manifest, no build system.** No `package.json`, `composer.json`, `Makefile`, or equivalent exists.
 - **CI**: GitHub Actions. ShellCheck pinned to `v0.11.0` (Docker image), PSScriptAnalyzer pinned to `1.25.0`.
 
@@ -17,14 +17,15 @@ In the repository each profile is **split into one part file per section**; the 
 
 ```
 src/bash/manifest.txt             # Ordered part list — drives concatenation into ~/.bashrc_extra
-src/bash/000-core.sh              # Prompt + history; carries the file-wide ShellCheck header
-src/bash/010-self.sh              # Prefix stepping by 10:
-src/bash/020-random.sh            #   self, random, network, python, node, git, claude, docker,
-src/bash/…                        #   apache, sql, certbot, php, laravel, agoravita (up to 140-)
+src/bash/000-core.sh              # 0NN — shared with pwsh; carries the file-wide ShellCheck header
+src/bash/010-self.sh              #   self, random, network, python, node, git, claude, docker
+src/bash/…                        #   (000- through 080-, same numbers as src/pwsh/)
+src/bash/100-apache.sh            # 1NN — Bash only: apache, sql, certbot, php, laravel,
+src/bash/…                        #   agoravita (up to 150-)
 src/pwsh/manifest.txt             # Ordered part list — concatenated into $HOME/profile_extra.ps1
-src/pwsh/000-core.ps1             # prompt function
-src/pwsh/010-self.ps1             # self, random, network, python, node, git, claude, docker,
-src/pwsh/…                        #   scripts (up to 090-)
+src/pwsh/000-core.ps1             # 0NN — shared with bash; prompt function
+src/pwsh/…                        #   (000- through 080-, same numbers as src/bash/)
+src/pwsh/200-shortcuts.ps1          # 2NN — PowerShell only
 scripts/install.sh                # Bash installer (curl | bash)
 scripts/uninstall.sh
 scripts/install.ps1               # PowerShell installer (irm | iex)
@@ -54,11 +55,11 @@ bash .github/scripts/lint-bash.sh
 Lint specific files:
 
 ```bash
-bash .github/scripts/lint-bash.sh src/bash/bashrc_extra.sh scripts/install.sh
+bash .github/scripts/lint-bash.sh src/bash/000-core.sh scripts/install.sh
 ```
 
 ```powershell
-./.github/scripts/lint-pwsh.ps1 -Path src/pwsh/profile_extra.ps1
+./.github/scripts/lint-pwsh.ps1 -Path src/pwsh/000-core.ps1
 ```
 
 Reproduce CI annotation output locally:
@@ -98,7 +99,7 @@ Install flow, identical in shape on both platforms:
 5. It re-sources the rc file.
 
 Manifest parsing is the same on both sides: strip everything after `#`, strip all whitespace (which also absorbs the CR of a CRLF manifest), skip empty lines. `.github/scripts/check-manifests.sh` reuses that parse so CI and the installers agree on what a manifest says.
-
+f
 Uninstall reverses steps 2 and 3: it deletes the profile file, then removes the hook line from the rc file along with the blank separator line the installer wrote before it, leaving the rc file byte-identical to its pre-install state. It rewrites the rc file in place (not via a temp file and `mv`) so ownership and mode are preserved. Every step is a no-op with a message when its target is already absent, so uninstall is idempotent.
 
 The installed profiles define `cshup` and `cshdel`, which re-run the install and uninstall scripts — so update is just re-install.
@@ -108,7 +109,8 @@ CI has three independent jobs (`manifests`, `bash`, `pwsh`) on `ubuntu-latest`, 
 ## Conventions
 
 - **A new section is two edits.** Create `src/<shell>/<NNN>-<name>.<ext>` *and* add it to that directory's `manifest.txt`. Neither alone works: an unlisted part is silently dropped from every install, a listed-but-absent part 404s the install. `check-manifests.sh` fails the build on either.
-- **Numeric prefixes step by 10** (`000-`, `010-`, … `140-`) so a section can be slotted between two existing ones without renumbering. They exist to make a directory listing read in install order — the manifest, not the prefix, is what the installer actually reads. Nothing enforces that the two agree on order, so keep them in sync by hand when inserting.
+- **The numeric prefix encodes shell coverage** — `0NN` shared, `1NN` Bash only, `2NN` PowerShell only. See "Part numbering" at the end of this file; it is the rule most likely to be got wrong.
+- **Within a band the number steps by 10** (`000-`, `010-`, …) so a section can be slotted between two existing ones without renumbering. Prefixes exist to make a directory listing read in install order — the manifest, not the prefix, is what the installer actually reads. Nothing enforces that the two agree on order, so keep them in sync by hand when inserting.
 - **PowerShell function naming.** PSScriptAnalyzer enforces `PSUseApprovedVerbs` and `PSUseShouldProcessForStateChangingFunctions` on `scripts/`. A new `Verb-Noun` function must use an approved verb that is *not* state-changing (`New`, `Set`, `Remove`, `Start`, `Stop`, `Restart`, `Reset`, `Update` trigger the ShouldProcess rule). `Get`, `Invoke`, `Register`, `Uninstall` satisfy both. Single-word function names (`Main`, `prompt`, `cshup`) are exempt from the verb rule.
 - **PSSA exclusions** (`PSScriptAnalyzerSettings.psd1`): `PSAvoidUsingWriteHost` and `PSAvoidUsingInvokeExpression` are globally disabled — coloured interactive output and `irm | iex` installs are intentional. Severity threshold is `Error` + `Warning`.
 - **ShellCheck exemptions are file-scoped, not repo-wide.** There is no `.shellcheckrc`. Every `src/bash/*.sh` part carries its own two-line header (`# shellcheck shell=bash`, then `disable=SC1091,SC2034,SC2142,SC2154`) because each part is linted on its own, is sourced rather than executed, and is full of single-quoted alias bodies. `000-core.sh` additionally carries the prose explaining what each code is for; it is first in the manifest, so that explanation lands at the top of the generated file. Everything under `scripts/` lints strictly. Suppress new findings inline at the line, not globally.
@@ -127,7 +129,7 @@ To exercise an installer end to end without touching your own home directory, se
 - Lint tooling:
   - `lint-bash.sh` requires **Docker** by default. Set `SHELLCHECK_BIN=/path/to/shellcheck` to use a local binary instead (results only match CI if the version matches). Overrides: `SHELLCHECK_VERSION`, `SHELLCHECK_SEVERITY`.
   - `lint-pwsh.ps1` installs PSScriptAnalyzer to `CurrentUser` scope on first run. Override the pin with `-Version` or `$env:PSSA_VERSION`.
-- External runtime dependency: the `ayc` / `gyc` / `cyc` functions in `src/pwsh/profile_extra.ps1` shell out to a **separate** `antho-scripts` repository expected at `%USERPROFILE%\projects\antho-scripts\`. They no-op with a message when absent.
+- External runtime dependency: the `ayc` / `gyc` / `cyc` functions in `src/pwsh/200-shortcuts.ps1` shell out to a **separate** `antho-scripts` repository expected at `%USERPROFILE%\projects\antho-scripts\`. They no-op with a message when absent.
 - The profiles reference many external CLIs (`docker`, `git`, `php`, `artisan`, `wp`, `npm`, `yarn`, `npx`, `python`, `certbot`, `openssl`, `mysql`). None are validated at source time; individual aliases fail if the tool is missing.
 
 ## Gotchas
@@ -140,3 +142,56 @@ To exercise an installer end to end without touching your own home directory, se
 - **`scripts/install.sh` assumes `~/.bashrc` exists**; `grep` emits a stderr error when it does not, though the append still creates the file. `scripts/install.ps1` explicitly creates `$PROFILE` when missing.
 - **Lint and manifest-check target discovery use `git ls-files --cached --others --exclude-standard`.** Untracked-but-not-ignored files *are* covered; files deleted from the working tree but still in the index are skipped. A file added to `.gitignore` silently drops out of CI coverage — including out of the manifest check.
 - **`Invoke-ScriptAnalyzer -Settings` silently ignores a `PathInfo` object.** Pass a string (`(Resolve-Path …).Path`) or every exclusion is dropped and the run reports dozens of false failures.
+- **`&&` and `||` are PowerShell 7 only.** Windows PowerShell 5.1 rejects them at *parse* time, so a single occurrence anywhere in any part makes the whole generated `profile_extra.ps1` fail to load — every function and alias in it, not just the offending line. Use `;` or `if ($?) { … }`. Same trap for `??`, `?.`, and the ternary `? :`. PSScriptAnalyzer does not catch this on its own; parse the file with `[System.Management.Automation.Language.Parser]::ParseFile(…)` under `powershell.exe` to be sure.
+
+## Part numbering
+
+The three-digit prefix on every `src/<shell>/` part encodes **which shells the section covers**. The leading digit is the band; the remaining two order parts within it.
+
+| Band | Meaning | Lives in |
+| --- | --- | --- |
+| `0NN` | Section exists in **both** shells | `src/bash/` *and* `src/pwsh/` |
+| `1NN` | **Bash only** | `src/bash/` |
+| `2NN` | **PowerShell only** | `src/pwsh/` |
+
+### The pairing rule
+
+**A `0NN` number names the same section in both shells.** `020-random.sh` and `020-random.ps1` are the same section, and the shared band is contiguous, so listing both directories side by side makes a gap obvious:
+
+```
+src/bash/                 src/pwsh/
+  000-core.sh               000-core.ps1
+  010-self.sh               010-self.ps1
+  020-random.sh             020-random.ps1
+  030-network.sh            030-network.ps1
+  040-python.sh             040-python.ps1
+  050-node.sh               050-node.ps1
+  060-git.sh                060-git.ps1
+  070-claude.sh             070-claude.ps1
+  080-docker.sh             080-docker.ps1
+  100-apache.sh             200-shortcuts.ps1
+  110-sql.sh
+  120-certbot.sh
+  130-php.sh
+  140-laravel.sh
+  150-agoravita.sh
+```
+
+That is the point of the scheme: after adding something to one shell, the numbers tell you whether the other shell owes you a counterpart.
+
+### Which band does a new section get?
+
+- **Portable in principle** — the concept works in both shells, even if you have only written one side yet: `0NN`, and create the counterpart. If you genuinely cannot write the other side now, put it in the shell-specific band and promote it later rather than leaving a half-empty `0NN` pair.
+- **Inherently one-shell** — the section is meaningless elsewhere (`apache`, `sql`, `certbot`, `php`, `laravel` are Linux-server concerns; `scripts` shells out to Windows paths): `1NN` or `2NN`.
+
+Ask "would I ever want this in the other shell?", not "have I written it yet?".
+
+### Renumbering
+
+Within a band the number steps by 10, so a new section slots between two existing ones without touching anything else. A band at that step holds ten sections; `0NN` currently uses nine of them. If a band fills, renumber that band alone — the bands are independent, and the manifest is what the installer reads, so the prefixes only have to stay consistent with each other and with manifest order.
+
+**Promoting a section from shell-specific to shared** (say, porting `110-sql.sh` to PowerShell) is a rename plus two manifest edits: move it to a free `0NN` in *both* directories, and update both manifests. Renaming and updating the manifest are not optional — `check-manifests.sh` fails the build if a part is not listed, and the install 404s if the manifest names a file that is not there.
+
+### What is *not* enforced
+
+`check-manifests.sh` verifies that each manifest matches its own directory. It does **not** check the pairing rule — nothing fails the build when `0NN-foo.sh` exists without `0NN-foo.ps1`, when the same `0NN` names different sections on the two sides, or when a part sits in the wrong band. That is a convention held by hand and by review.

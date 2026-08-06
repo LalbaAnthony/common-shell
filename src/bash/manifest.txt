@@ -3,14 +3,18 @@
 # One filename per line, relative to src/bash/. Blank lines and everything
 # after a '#' are ignored. Filenames must not contain whitespace.
 #
-# The numeric prefixes step by 10 so a new section can be slotted between two
-# existing ones without renumbering. This file, not the prefix, is what the
-# installer reads - keep the two in the same order.
+# The leading digit encodes shell coverage:
+#   0NN  section exists in BOTH shells - the same 0NN number names the same
+#        section in src/pwsh/, so a missing counterpart is visible at a glance
+#   1NN  Bash only
+#   2NN  PowerShell only (never appears in this file)
+# Within a band the number steps by 10, leaving room to insert.
 #
 # Every *.sh file in this directory must be listed here exactly once:
 # .github/scripts/check-manifests.sh fails the build otherwise, because an
 # unlisted part is silently dropped from every install.
 
+# -------- 0NN: shared with PowerShell --------
 000-core.sh
 010-self.sh
 020-random.sh
@@ -20,9 +24,11 @@
 060-git.sh
 070-claude.sh
 080-docker.sh
-090-apache.sh
-100-sql.sh
-110-certbot.sh
-120-php.sh
-130-laravel.sh
-140-agoravita.sh
+
+# -------- 1NN: Bash only --------
+100-apache.sh
+110-sql.sh
+120-certbot.sh
+130-php.sh
+140-laravel.sh
+150-agoravita.sh
