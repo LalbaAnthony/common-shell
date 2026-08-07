@@ -7,7 +7,7 @@
         # prompt and command output), not a diagnostic-stream mistake.
         'PSAvoidUsingWriteHost',
 
-        # cshup/cshdel intentionally pipe the remote installer into
+        # cshupd/cshdel intentionally pipe the remote installer into
         # Invoke-Expression, mirroring the documented `irm ... | iex` install.
         'PSAvoidUsingInvokeExpression'
     )
