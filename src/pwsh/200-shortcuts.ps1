@@ -1,3 +1,9 @@
+function ayc {
+    gyc
+    cyc
+    cshupd
+}
+
 function gyc {
     $scriptPaths = @(
         (Join-Path $env:USERPROFILE 'projects\antho-scripts\git\git_sync_projects.py')
@@ -12,7 +18,6 @@ function gyc {
 
     python $scriptPath
 }
-
 
 function cyc {
     $scriptPaths = @(
