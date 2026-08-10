@@ -28,3 +28,4 @@
 # -------- 2NN: PowerShell only --------
 200-shortcuts.ps1
 210-filezilla.ps1
+220-vscode.ps1
