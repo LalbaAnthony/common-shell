@@ -78,7 +78,6 @@ gacp() {
         return 1
     fi
 
-    git pull --rebase
     git add . && git commit -m "$1" && git push
 }
 

@@ -74,7 +74,6 @@ function gacp {
         return
     }
 
-    git pull --rebase
     git add .
     git commit -m $message
     git push
