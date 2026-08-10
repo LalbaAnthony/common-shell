@@ -77,13 +77,13 @@ bash .github/scripts/check-manifests.sh
 Install / uninstall (these modify the invoking user's home directory and shell profile — see Gotchas before running):
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.sh)
-bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)
 ```
 
 ```powershell
-irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/install.ps1 | iex
-irm https://raw.githubusercontent.com/LalbaAnthony/antho-common-shell/main/scripts/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.ps1 | iex
 ```
 
 No setup, build, run/dev, test, format, or typecheck commands exist in this repository.
