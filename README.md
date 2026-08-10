@@ -6,8 +6,8 @@ Useful aliases and functions to boost your productivity in the terminal.
 
 ### Bash
 
-Empty `.bash_aliases` if needed:
 ```sh
+# Empty .bash_aliases if needed:
 > ~/.bash_aliases
 ```
 
@@ -21,8 +21,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/ma
 
 ### PowerShell
 
-Empty `$PROFILE` if needed:
 ```ps1
+# Empty $PROFILE if needed:
 $null > $PROFILE
 ```
 
