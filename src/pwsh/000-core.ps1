@@ -23,3 +23,7 @@ function prompt {
 
     return " $ "
 }
+
+function ps1 {
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$($executionContext.SessionState.Path.CurrentLocation)'" 
+}
