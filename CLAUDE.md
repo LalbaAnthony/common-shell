@@ -158,25 +158,6 @@ The three-digit prefix on every `src/<shell>/` part encodes **which shells the s
 
 **A `0NN` number names the same section in both shells.** `020-random.sh` and `020-random.ps1` are the same section, and the shared band is contiguous, so listing both directories side by side makes a gap obvious:
 
-```
-src/bash/                 src/pwsh/
-  000-core.sh               000-core.ps1
-  010-self.sh               010-self.ps1
-  020-random.sh             020-random.ps1
-  030-network.sh            030-network.ps1
-  040-python.sh             040-python.ps1
-  050-node.sh               050-node.ps1
-  060-git.sh                060-git.ps1
-  070-claude.sh             070-claude.ps1
-  080-docker.sh             080-docker.ps1
-  100-apache.sh             200-shortcuts.ps1
-  110-sql.sh
-  120-certbot.sh
-  130-php.sh
-  140-laravel.sh
-  150-agoravita.sh
-```
-
 That is the point of the scheme: after adding something to one shell, the numbers tell you whether the other shell owes you a counterpart.
 
 ### Which band does a new section get?
