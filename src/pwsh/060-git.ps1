@@ -140,6 +140,32 @@ function gbranch {
     }
 }
 
+function gopen {
+    param([string]$Remote = 'origin')
+
+    $url = git remote get-url $Remote 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $url) {
+        Write-Host "No remote '$Remote' found."
+        return
+    }
+
+    if ($url -match '^https?://') {
+        # Drop any embedded credentials and the trailing .git
+        $webUrl = $url -replace '^(https?://)[^/@]+@', '$1' -replace '\.git/?$', ''
+    }
+    elseif ($url -match '^(?:ssh://)?(?:[^@/]+@)?(?<host>[^:/]+?)(?::\d+)?[:/](?<path>.+?)(?:\.git)?/?$') {
+        # scp-style (git@host:owner/repo.git) and ssh:// remotes
+        $webUrl = "https://$($Matches.host)/$($Matches.path)"
+    }
+    else {
+        Write-Host "Cannot build a web URL from: $url"
+        return
+    }
+
+    Write-Host $webUrl
+    Start-Process $webUrl
+}
+
 function ghSetDefaultBranch {
     param(
         [Parameter(Mandatory, Position = 0)][string]$Branch,

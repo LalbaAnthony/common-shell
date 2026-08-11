@@ -130,3 +130,40 @@ gbranch() {
         break
     done
 }
+
+gopen() {
+    local remote=${1:-origin}
+    local url web_url
+
+    url=$(git remote get-url "$remote" 2>/dev/null) || {
+        echo "No remote '$remote' found."
+        return 1
+    }
+
+    if [[ "$url" =~ ^https?:// ]]; then
+        # Drop any embedded credentials and the trailing .git
+        web_url=$(sed -E 's#^(https?://)[^/@]+@#\1#; s#\.git/?$##' <<< "$url")
+    elif [[ "$url" =~ ^(ssh://)?([^@/]+@)?[^:/]+(:[0-9]+)?[:/].+ ]]; then
+        # scp-style (git@host:owner/repo.git) and ssh:// remotes
+        web_url="https://$(sed -E 's#^ssh://##; s#^[^@/]+@##; s#:[0-9]+/#/#; s#:#/#; s#\.git/?$##' <<< "$url")"
+    else
+        echo "Cannot build a web URL from: $url"
+        return 1
+    fi
+
+    echo "$web_url"
+
+    if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$web_url" >/dev/null 2>&1 &
+    elif command -v open >/dev/null 2>&1; then
+        open "$web_url"
+    elif command -v wslview >/dev/null 2>&1; then
+        wslview "$web_url"
+    elif command -v explorer.exe >/dev/null 2>&1; then
+        # explorer.exe exits 1 even on success
+        explorer.exe "$web_url" >/dev/null 2>&1 || true
+    else
+        echo "No browser opener found (xdg-open, open, wslview, explorer.exe)."
+        return 1
+    fi
+}
