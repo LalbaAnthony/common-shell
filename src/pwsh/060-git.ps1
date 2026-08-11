@@ -139,3 +139,21 @@ function gbranch {
         Write-Host "Invalid choice"
     }
 }
+
+function ghSetDefaultBranch {
+    param(
+        [Parameter(Mandatory, Position = 0)][string]$Branch,
+        [string]$Remote = 'origin'
+    )
+
+    # Extract OWNER/REPO from https, ssh or scp-style remote URLs
+    $url = git remote get-url $Remote
+    if ($url -notmatch '[:/](?<repo>[^/:]+/[^/]+?)(?:\.git)?/?$') {
+        throw "Cannot resolve OWNER/REPO from: $url"
+    }
+
+    gh api -X PATCH "repos/$($Matches.repo)" -f "default_branch=$Branch" --silent
+    if ($LASTEXITCODE -ne 0) { throw "Failed to set default branch to '$Branch'." }
+
+    git remote set-head $Remote --auto | Out-Null
+}
