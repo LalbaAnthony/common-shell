@@ -8,6 +8,7 @@ function gplo { git pull origin @args }
 function gph { git log --oneline --graph --decorate --all }
 function gd { git diff "origin/$(git rev-parse --abbrev-ref HEAD)" }
 function gds { git diff --shortstat "origin/$(git rev-parse --abbrev-ref HEAD)" }
+function gdf { git diff --stat "origin/$(git rev-parse --abbrev-ref HEAD)" } # Same as gds, but one line per file
 function gbd { git branch -d @args }
 function gundo { git reset --soft HEAD~1 }
 function gclean { git reset --hard; git clean -fd }

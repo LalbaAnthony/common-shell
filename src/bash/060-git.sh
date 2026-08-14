@@ -11,6 +11,7 @@ alias gplo='git pull origin'
 alias gph='git log --oneline --graph --decorate --all'
 alias gd='git diff origin/$(git rev-parse --abbrev-ref HEAD)'
 alias gds='git diff --shortstat origin/$(git rev-parse --abbrev-ref HEAD)'
+alias gdf='git diff --stat origin/$(git rev-parse --abbrev-ref HEAD)' # Same as gds, but one line per file
 alias gbd='git branch -d'
 alias gundo='git reset --soft HEAD~1'
 alias gclean='git reset --hard && git clean -fd'
