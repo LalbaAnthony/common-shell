@@ -11,7 +11,7 @@ alias drestart='docker restart $(docker ps -q)' # Restart all running containers
 
 dps() {
     # Default cols minus IMAGE and COMMAND
-    docker ps --format "table {{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}"
+    docker ps --format "table {{.ID}}\t{{.Names}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}"
 }
 
 dexec() {

@@ -8,7 +8,7 @@ function drestart { docker restart $(docker ps -q) }
 
 function dps {
     # Default cols minus IMAGE and COMMAND
-    docker ps --format 'table {{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
+    docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}'
 }
 
 function dexec {
