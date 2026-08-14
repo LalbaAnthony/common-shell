@@ -1,11 +1,15 @@
 function dcb { docker compose up --build -d }
-function dps { docker ps }
 function dpa { docker ps -a }
 function drm { docker rm -f @args }
 function dst { docker stats }
 function dim { docker images }
 function dclean { docker system prune -af --volumes }
 function drestart { docker restart $(docker ps -q) }
+
+function dps {
+    # Default cols minus IMAGE and COMMAND
+    docker ps --format 'table {{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
+}
 
 function dexec {
     param($container)

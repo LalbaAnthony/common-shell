@@ -2,13 +2,17 @@
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
 alias dcb='docker compose up --build -d'
-alias dps='docker ps'
 alias dpa='docker ps -a'
 alias drm='docker rm -f'
 alias dst='docker stats'
 alias dim='docker images'
 alias dclean='docker system prune -af --volumes'
 alias drestart='docker restart $(docker ps -q)' # Restart all running containers
+
+dps() {
+    # Default cols minus IMAGE and COMMAND
+    docker ps --format "table {{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}"
+}
 
 dexec() {
     if [ -z "$1" ]; then
