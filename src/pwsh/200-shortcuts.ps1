@@ -1,6 +1,8 @@
 function ayc {
     gyc
+    Write-Host "`n"
     cyc
+    Write-Host "`n"
     cshupd
 }
 
