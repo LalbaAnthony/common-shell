@@ -8,13 +8,13 @@ function ayc {
 
 function gyc {
     $scriptPaths = @(
-        (Join-Path $env:USERPROFILE 'projects\antho-scripts\git\git_sync_projects.py')
+        (Join-Path $env:USERPROFILE 'projects\antho-scripts\git\git_sync_repos.py')
     )
 
     $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
 
     if (-not $scriptPath) {
-        Write-Host "git_sync_projects.py script not found."
+        Write-Host "git_sync_repos.py script not found."
         return
     }
 
