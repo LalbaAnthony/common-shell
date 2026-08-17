@@ -2,7 +2,7 @@
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
 alias cusage='npx ccusage@latest'
-alias cvscode='cd ~/.claude && code .'
+alias cvscode='code ~/.claude'
 
 ccontinue() {
     # resolve most recent session id for cwd, then hand it to the URI handler
