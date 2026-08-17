@@ -16,7 +16,7 @@ alias www='cd /var/www'
 alias html='cd /var/www/html'
 alias home='cd ~'
 
-# Random
+# Commands
 alias cls='clear'
 alias please='sudo'
 alias plz='sudo'
@@ -26,6 +26,10 @@ alias fuck='fc -e nano' # Edit last command in nano
 alias again='fc -s' # Repeat last command
 alias h='history | tail -n 30'
 alias hfreq='history | awk "{print \$2}" | sort | uniq -c | sort -nr | head -n 20' # Most frequently used commands
+
+# Random
+alias weather='curl wttr.in' # Get weather for current location
+alias hxky='npx @lalba-anthony/hexasky "Toulouse"'
 
 # Bash
 alias shp='echo "Profile file: ~/.bashrc"'

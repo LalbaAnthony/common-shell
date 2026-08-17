@@ -18,8 +18,12 @@ function .... { Set-Location ../../.. }
 function ..... { Set-Location ../../../.. }
 function home { Set-Location ~ }
 
-# Random
+# Commands
 function again { Invoke-History }
+
+# Random
+function weather { curl wttr.in } # Get weather for current location
+function hxky { npx @lalba-anthony/hexasky "Toulouse" }
 
 # PowerShell
 function psp() { Write-Host "Profile file: $PROFILE" }
