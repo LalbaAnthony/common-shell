@@ -29,7 +29,7 @@ alias hfreq='history | awk "{print \$2}" | sort | uniq -c | sort -nr | head -n 2
 
 # Random
 alias weather='curl wttr.in' # Get weather for current location
-alias hxky='npx @lalba-anthony/hexasky "Toulouse"'
+alias hxy='npx @lalba-anthony/hexasky "Toulouse"'
 
 # Bash
 alias shp='echo "Profile file: ~/.bashrc"'
