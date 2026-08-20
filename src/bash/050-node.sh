@@ -31,6 +31,15 @@ npdev() {
         return 1
     fi
 
+    if [ -n "$front" ] && [ ! -d "$front/node_modules" ]; then
+        echo "Installing dependencies in $front/"
+        ( cd "$front" && npm install ) || return 1
+    fi
+    if [ -n "$back" ] && [ ! -d "$back/node_modules" ]; then
+        echo "Installing dependencies in $back/"
+        ( cd "$back" && npm install ) || return 1
+    fi
+
     local names=() colors=() cmds=()
     if [ -n "$front" ]; then
         names+=("front"); colors+=("cyan"); cmds+=("cd $front && npm run dev")

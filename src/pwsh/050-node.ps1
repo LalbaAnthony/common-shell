@@ -28,6 +28,20 @@ function npdev {
         return
     }
 
+    foreach ($dir in @($front, $back) | Where-Object { $_ }) {
+        if (-not (Test-Path (Join-Path $dir "node_modules") -PathType Container)) {
+            Write-Host "Installing dependencies in $dir/"
+            Push-Location $dir
+            npm install
+            $code = $LASTEXITCODE
+            Pop-Location
+            if ($code -ne 0) {
+                Write-Host "npm install failed in $dir/"
+                return
+            }
+        }
+    }
+
     $names = @(); $colors = @(); $cmds = @()
     if ($front) { $names += 'front'; $colors += 'cyan';    $cmds += "cd $front && npm run dev" }
     if ($back)  { $names += 'back';  $colors += 'magenta'; $cmds += "cd $back && npm run dev" }
