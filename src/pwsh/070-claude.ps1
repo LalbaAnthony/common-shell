@@ -1,7 +1,7 @@
-function cusage { npx ccusage@latest }
-function cvscode { code "$HOME/.claude" }
+function ccusage { npx ccusage@latest }
+function ccopen { code "$HOME/.claude" }
 
-function ccontinue {
+function cctn {
     # resolve most recent session id for cwd, then hand it to the URI handler
     $dir = "$HOME\.claude\projects\" + ($PWD.Path -replace '[^a-zA-Z0-9]', '-')
     $sid = (Get-ChildItem "$dir\*.jsonl" -ErrorAction SilentlyContinue |
