@@ -129,7 +129,7 @@ To exercise an installer end to end without touching your own home directory, se
 - Lint tooling:
   - `lint-bash.sh` requires **Docker** by default. Set `SHELLCHECK_BIN=/path/to/shellcheck` to use a local binary instead (results only match CI if the version matches). Overrides: `SHELLCHECK_VERSION`, `SHELLCHECK_SEVERITY`.
   - `lint-pwsh.ps1` installs PSScriptAnalyzer to `CurrentUser` scope on first run. Override the pin with `-Version` or `$env:PSSA_VERSION`.
-- External runtime dependency: the `ayc` / `gyc` / `cyc` functions in `src/pwsh/200-shortcuts.ps1` shell out to a **separate** `antho-scripts` repository expected at `%USERPROFILE%\projects\antho-scripts\`. They no-op with a message when absent.
+- External runtime dependency: the `ayc` / `gyc` functions in `src/pwsh/200-shortcuts.ps1` shell out to a **separate** `antho-scripts` repository expected at `%USERPROFILE%\projects\antho-scripts\`. They no-op with a message when absent.
 - The profiles reference many external CLIs (`docker`, `git`, `php`, `artisan`, `wp`, `npm`, `yarn`, `npx`, `python`, `certbot`, `openssl`, `mysql`). None are validated at source time; individual aliases fail if the tool is missing.
 
 ## Gotchas

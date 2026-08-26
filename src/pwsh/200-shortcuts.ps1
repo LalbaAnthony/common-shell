@@ -1,8 +1,6 @@
 function ayc {
     gyc
     Write-Host "`n"
-    cyc
-    Write-Host "`n"
     cshupd
 }
 
@@ -19,21 +17,6 @@ function gyc {
     }
 
     python $scriptPath
-}
-
-function cyc {
-    $scriptPaths = @(
-        (Join-Path $env:USERPROFILE 'projects\antho-scripts\ai\claude_sync.ps1')
-    )
-
-    $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-
-    if (-not $scriptPath) {
-        Write-Host "claude_sync.ps1 script not found."
-        return
-    }
-
-    & $scriptPath @args
 }
 
 function fzc {
@@ -53,7 +36,7 @@ function fzc {
 
 function mdclean {
     $scriptPaths = @(
-        (Join-Path $env:USERPROFILE 'projects\antho-scripts\ai\markdown_cleaner.ps1')
+        (Join-Path $env:USERPROFILE 'projects\antho-scripts\markdown\markdown_cleaner.ps1')
     )
 
     $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
@@ -68,7 +51,7 @@ function mdclean {
 
 function md2pdf {
     $scriptPaths = @(
-        (Join-Path $env:USERPROFILE 'projects\antho-scripts\apitemplate\markdown_to_pdf.ps1')
+        (Join-Path $env:USERPROFILE 'projects\antho-scripts\markdown\markdown_to_pdf.ps1')
     )
 
     $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
