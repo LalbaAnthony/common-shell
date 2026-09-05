@@ -24,6 +24,7 @@
 060-git.sh
 070-claude.sh
 080-docker.sh
+090-shortcuts.sh
 
 # -------- 1NN: Bash only --------
 100-apache.sh

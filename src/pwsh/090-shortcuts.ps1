@@ -1,3 +1,19 @@
+function hxy {
+    param($location)
+
+    if (-not $location) {
+        $location = "Toulouse"
+    }
+
+    npx @lalba-anthony/hexasky $location
+}
+
+function mdclean {
+    param($file)
+
+    npx @lalba-anthony/md-cleaner $file
+}
+
 function ayc {
     gyc
     Write-Host "`n"
@@ -32,21 +48,6 @@ function fzc {
     }
 
     Start-Process powershell -ArgumentList "python `"$scriptPath`"" # Open in a new PowerShell window
-}
-
-function mdclean {
-    $scriptPaths = @(
-        (Join-Path $env:USERPROFILE 'projects\antho-scripts\markdown\markdown_cleaner.ps1')
-    )
-
-    $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-
-    if (-not $scriptPath) {
-        Write-Host "markdown_cleaner.ps1 script not found."
-        return
-    }
-
-    & $scriptPath @args
 }
 
 function md2pdf {

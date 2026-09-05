@@ -21,9 +21,8 @@ function home { Set-Location ~ }
 # Commands
 function again { Invoke-History }
 
-# Random
+# Location related
 function weather { curl wttr.in } # Get weather for current location
-function hxy { npx @lalba-anthony/hexasky "Toulouse" }
 
 # PowerShell
 function psp() { Write-Host "Profile file: $PROFILE" }

@@ -27,9 +27,8 @@ alias again='fc -s' # Repeat last command
 alias h='history | tail -n 30'
 alias hfreq='history | awk "{print \$2}" | sort | uniq -c | sort -nr | head -n 20' # Most frequently used commands
 
-# Random
+# Location related
 alias weather='curl wttr.in' # Get weather for current location
-alias hxy='npx @lalba-anthony/hexasky "Toulouse"'
 
 # Bash
 alias shp='echo "Profile file: ~/.bashrc"'
