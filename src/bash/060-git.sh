@@ -14,7 +14,7 @@ alias gds='git diff --shortstat origin/$(git rev-parse --abbrev-ref HEAD)'
 alias gdf='git diff --stat origin/$(git rev-parse --abbrev-ref HEAD)' # Same as gds, but one line per file
 alias gbd='git branch -d'
 alias gundo='git reset --soft HEAD~1'
-alias gclean='git reset --hard && git clean -fd'
+alias gclear='git reset --hard && git clean -fd'
 alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
 alias grecent='git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15'
