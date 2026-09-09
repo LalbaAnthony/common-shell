@@ -168,3 +168,52 @@ gopen() {
         return 1
     fi
 }
+
+gprune() {
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+        echo "Not a git repository."
+        return 1
+    }
+
+    # Prune first, otherwise a stale ref cache makes "gone" meaningless
+    git fetch --prune || {
+        echo "Failed to fetch from the remote. Aborting."
+        return 1
+    }
+
+    local current branch
+    local deleted=() skipped=()
+    # A gone upstream on these means the remote is broken, not that the branch is disposable
+    local protected=" main master develop "
+
+    current=$(git rev-parse --abbrev-ref HEAD)
+
+    while read -r branch; do
+        [ -n "$branch" ] || continue
+        [ "$branch" != "$current" ] || continue
+        if [[ "$protected" == *" $branch "* ]]; then
+            continue
+        fi
+        # -d only, never -D: unmerged work must not disappear silently
+        if git branch -d "$branch" >/dev/null 2>&1; then
+            deleted+=("$branch")
+        else
+            skipped+=("$branch")
+        fi
+    done < <(git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads/ | awk '$2 == "[gone]" { print $1 }')
+
+    if [ ${#deleted[@]} -eq 0 ] && [ ${#skipped[@]} -eq 0 ]; then
+        echo "Nothing to delete: no local branch has a gone upstream."
+        return 0
+    fi
+
+    if [ ${#deleted[@]} -gt 0 ]; then
+        echo "Deleted ${#deleted[@]} branch(es):"
+        printf '  %s\n' "${deleted[@]}"
+    fi
+
+    if [ ${#skipped[@]} -gt 0 ]; then
+        echo "Skipped ${#skipped[@]} unmerged branch(es), use 'git branch -D <branch>' if you are sure:"
+        printf '  %s\n' "${skipped[@]}"
+    fi
+}

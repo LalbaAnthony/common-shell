@@ -184,3 +184,57 @@ function ghSetDefaultBranch {
 
     git remote set-head $Remote --auto | Out-Null
 }
+
+function gprune {
+    git rev-parse --is-inside-work-tree 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Not a git repository."
+        return
+    }
+
+    # Prune first, otherwise a stale ref cache makes "gone" meaningless
+    git fetch --prune
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to fetch from the remote. Aborting."
+        return
+    }
+
+    $current = git rev-parse --abbrev-ref HEAD
+    # A gone upstream on these means the remote is broken, not that the branch is disposable
+    $keep = @('main', 'master', 'develop')
+    $format = '%(refname:short) %(upstream:track)'
+
+    $gone = git for-each-ref --format=$format refs/heads/ |
+        Where-Object { $_ -match '\[gone\]$' } |
+        ForEach-Object { ($_ -split '\s+')[0] } |
+        Where-Object { $_ -ne $current -and $keep -notcontains $_ }
+
+    $deleted = @()
+    $skipped = @()
+
+    foreach ($branch in $gone) {
+        # -d only, never -D: unmerged work must not disappear silently
+        git branch -d $branch 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $deleted += $branch
+        }
+        else {
+            $skipped += $branch
+        }
+    }
+
+    if ($deleted.Count -eq 0 -and $skipped.Count -eq 0) {
+        Write-Host "Nothing to delete: no local branch has a gone upstream."
+        return
+    }
+
+    if ($deleted.Count -gt 0) {
+        Write-Host "Deleted $($deleted.Count) branch(es):"
+        foreach ($branch in $deleted) { Write-Host "  $branch" }
+    }
+
+    if ($skipped.Count -gt 0) {
+        Write-Host "Skipped $($skipped.Count) unmerged branch(es), use 'git branch -D <branch>' if you are sure:"
+        foreach ($branch in $skipped) { Write-Host "  $branch" }
+    }
+}
