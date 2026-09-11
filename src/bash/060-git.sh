@@ -19,6 +19,27 @@ alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
 alias grecent='git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15'
 
+deltainstall() {
+    sudo apt install git-delta
+
+    if ! command -v delta >/dev/null; then
+        sudo apt-get update
+        if apt-cache show git-delta >/dev/null 2>&1; then
+            sudo apt-get install -y git-delta
+        else
+            arch=$(dpkg --print-architecture)
+            tag=$(curl -fsSL https://api.github.com/repos/dandavison/delta/releases/latest \
+            | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')
+            deb=$(mktemp --suffix=.deb)
+            curl -fsSL -o "$deb" "https://github.com/dandavison/delta/releases/download/${tag}/git-delta_${tag}_${arch}.deb"
+            sudo dpkg -i "$deb"
+            rm -f "$deb"
+        fi
+    fi
+
+    delta --version
+}
+
 grestore() {
     local file=$1
     local commit=$2
