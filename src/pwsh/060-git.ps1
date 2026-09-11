@@ -17,16 +17,7 @@ function gpf { git push --force-with-lease }
 
 function deltainstall { 
     winget install --id dandavison.delta -e --accept-source-agreements --accept-package-agreements
-
-    $links = "$env:LOCALAPPDATA\Microsoft\WinGet\Links"
-    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-
-    if ((Test-Path "$links\delta.exe") -and ($userPath -split ";" -notcontains $links)) {
-        [Environment]::SetEnvironmentVariable("Path", "$userPath;$links", "User")
-    }
-
     $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
-
     delta --version
 }
 

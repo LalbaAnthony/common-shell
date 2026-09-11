@@ -1,3 +1,11 @@
+$env:Path = (
+    ($env:Path -split ';') +                                                # PATH hérité du parent (AutoHotkey, VS Code...)
+    ([Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';') + # PATH machine lu dans le registre
+    ([Environment]::GetEnvironmentVariable('Path', 'User') -split ';') |    # PATH utilisateur lu dans le registre
+    Where-Object { $_ } |                                                   # supprime les entrées vides (";;")
+    Select-Object -Unique                                                   # supprime les doublons
+) -join ';'                                                                 # recolle en une seule chaîne
+
 function prompt {
     $isAdmin = ([Security.Principal.WindowsPrincipal] `
         [Security.Principal.WindowsIdentity]::GetCurrent()
