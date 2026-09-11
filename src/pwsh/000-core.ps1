@@ -1,10 +1,10 @@
 $env:Path = (
-    ($env:Path -split ';') +                                                # PATH hérité du parent (AutoHotkey, VS Code...)
-    ([Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';') + # PATH machine lu dans le registre
-    ([Environment]::GetEnvironmentVariable('Path', 'User') -split ';') |    # PATH utilisateur lu dans le registre
-    Where-Object { $_ } |                                                   # supprime les entrées vides (";;")
-    Select-Object -Unique                                                   # supprime les doublons
-) -join ';'                                                                 # recolle en une seule chaîne
+    ($env:Path -split ';') +                                                # PATH inherited from the parent process (AutoHotkey, VS Code...)
+    ([Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';') + # machine PATH read from the registry
+    ([Environment]::GetEnvironmentVariable('Path', 'User') -split ';') |    # user PATH read from the registry
+    Where-Object { $_ } |                                                   # drop empty entries (";;")
+    Select-Object -Unique                                                   # drop duplicates
+) -join ';'                                                                 # join back into a single string
 
 function prompt {
     $isAdmin = ([Security.Principal.WindowsPrincipal] `
