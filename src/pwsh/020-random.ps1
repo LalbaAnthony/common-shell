@@ -22,7 +22,7 @@ function home { Set-Location ~ }
 function again { Invoke-History }
 
 # Location related
-function weather { curl wttr.in } # Get weather for current location
+function weather { Invoke-RestMethod 'https://wttr.in' -UserAgent 'curl' } # Get weather for current location
 
 # PowerShell
 function psp() { Write-Host "Profile file: $PROFILE" }
