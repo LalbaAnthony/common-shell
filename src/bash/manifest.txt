@@ -25,6 +25,7 @@
 070-claude.sh
 080-docker.sh
 090-shortcuts.sh
+095-env.sh
 
 # -------- 1NN: Bash only --------
 100-apache.sh
