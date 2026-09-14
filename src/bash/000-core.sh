@@ -27,3 +27,4 @@ export HISTSIZE=5000
 export HISTFILESIZE=10000
 export HISTIGNORE="&:ls:cd:cd -:pwd:exit:clear"
 shopt -s histappend
+set +H # Disable ! style history expansion
