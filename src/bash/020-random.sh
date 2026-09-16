@@ -41,13 +41,40 @@ alias watchspace='watch -n5 "df -hT | grep -E \"Filesystem|/dev/\""' # Monitor d
 alias topcpu='ps aux --sort=-%cpu | head -n 11' # Top 10 CPU consumers
 alias topmem='ps aux --sort=-%mem | head -n 11' # Top 10 RAM consumers
 
+# Open the current directory in the file explorer
+exp() {
+    if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open . >/dev/null 2>&1 &
+    elif command -v open >/dev/null 2>&1; then
+        open .
+    elif command -v wslview >/dev/null 2>&1; then
+        wslview .
+    elif command -v explorer.exe >/dev/null 2>&1; then
+        # explorer.exe exits 1 even on success
+        explorer.exe . >/dev/null 2>&1 || true
+    else
+        echo "No file explorer opener found (xdg-open, open, wslview, explorer.exe)."
+        return 1
+    fi
+}
+
 # Create a folder and cd into it
 mkcd() {
+    if [ -z "$1" ]; then
+        echo "Usage: mkcd <folder>"
+        return 1
+    fi
+
     mkdir -p "$1" && cd "$1" || return
 }
 
 # Extract various archive types with a single command
 extractt() {
+    if [ -z "$1" ]; then
+        echo "Usage: extractt <archive>"
+        return 1
+    fi
+
     if [ -f "$1" ]; then
         case "$1" in
             *.tar.bz2)   tar xjf "$1"    ;;
@@ -67,21 +94,44 @@ extractt() {
             *.txz)       tar xJf "$1"    ;;
             *.tar.zst)   tar --zstd -xf "$1" ;;
             *.zst)       unzstd "$1"     ;;
-            *)           echo "'$1' is not handled by extract()" ;;
+            *)           echo "'$1' is not handled by extractt()" ;;
         esac
     else
         echo "'$1' is not a valid file"
+        return 1
     fi
 }
 
 # Backup any folder quickly to timestamped tar
 backupp() {
-    tar -czf "$1_$(date +%F_%H-%M-%S).tar.gz" "$1";
+    if [ -z "$1" ]; then
+        echo "Usage: backupp <file_or_folder>"
+        return 1
+    fi
+
+    tar -czf "$1_$(date +%F_%H-%M-%S).tar.gz" "$1"
 }
 
 # Replace string in all files recursively
 rreplace() {
-    grep -rl "$1" . | xargs sed -i "s/$1/$2/g";
+    if [ -z "$1" ]; then
+        echo "Usage: rreplace <search> <replace>"
+        return 1
+    fi
+
+    grep -rl "$1" . | xargs sed -i "s/$1/$2/g"
+}
+
+# List every file under a folder, as paths relative to it
+list_files() {
+    local base=${1:-.}
+
+    if [ ! -d "$base" ]; then
+        echo "'$base' is not a valid directory"
+        return 1
+    fi
+
+    ( cd "$base" && find . -type f | sed 's|^\./||' )
 }
 
 # Reload or restart a systemd service with one command

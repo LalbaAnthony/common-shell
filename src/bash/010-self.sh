@@ -3,4 +3,4 @@
 
 alias cshdel='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)'
 alias cshupd='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/install.sh)'
-alias cshopen='cd ~ ; ls .bash*'
+alias cshopen='cd ~ ; ls -la .bashrc .bashrc_extra 2>/dev/null' # Go home and show the shell config files

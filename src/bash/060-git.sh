@@ -89,12 +89,15 @@ gclone() {
     local repo_name
     repo_name=$(basename "$1" .git)
 
-    git clone "$1"
-
-    if [ $? -eq 0 ]; then
-        code "$repo_name" || cd "$repo_name" || return
-    else
+    if ! git clone "$1"; then
         echo "Failed to clone repository: $1"
+        return 1
+    fi
+
+    if command -v code >/dev/null 2>&1; then
+        code "$repo_name"
+    else
+        cd "$repo_name" || return 1
     fi
 }
 
@@ -118,7 +121,13 @@ gacp() {
 }
 
 groot() {
-    cd "$(git rev-parse --show-toplevel)" || return
+    local root
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+        echo "Not a git repository."
+        return 1
+    }
+
+    cd "$root" || return 1
 }
 
 gck() {
@@ -202,6 +211,36 @@ gopen() {
         echo "No browser opener found (xdg-open, open, wslview, explorer.exe)."
         return 1
     fi
+}
+
+ghSetDefaultBranch() {
+    local branch=$1
+    local remote=${2:-origin}
+
+    if [ -z "$branch" ]; then
+        echo "Usage: ghSetDefaultBranch <branch_name> [remote]"
+        return 1
+    fi
+
+    local url repo
+    url=$(git remote get-url "$remote" 2>/dev/null) || {
+        echo "No remote '$remote' found."
+        return 1
+    }
+
+    # Extract OWNER/REPO from https, ssh or scp-style remote URLs
+    repo=$(sed -E 's#(\.git)?/?$##; s#^.*[:/]([^/:]+/[^/]+)$#\1#' <<< "$url")
+    if [[ "$repo" != */* ]] || [[ "$repo" == *[:@]* ]]; then
+        echo "Cannot resolve OWNER/REPO from: $url"
+        return 1
+    fi
+
+    gh api -X PATCH "repos/$repo" -f "default_branch=$branch" --silent || {
+        echo "Failed to set default branch to '$branch'."
+        return 1
+    }
+
+    git remote set-head "$remote" --auto >/dev/null
 }
 
 gprune() {

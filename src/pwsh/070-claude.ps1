@@ -1,5 +1,5 @@
 function ccusage { npx ccusage@latest }
-function ccopen { Invoke-Item "$HOME/.claude" }
+function ccopen { Set-Location "$HOME\.claude" }
 
 function cctn {
     # resolve most recent session id for cwd, then hand it to the URI handler
@@ -8,9 +8,10 @@ function cctn {
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1).BaseName
 
-    if ($sid) {
-        Start-Process "vscode://anthropic.claude-code/open?session=$sid"
-    } else {
+    if (-not $sid) {
         Write-Error "no session transcript found in $dir"
+        return
     }
+
+    Start-Process "vscode://anthropic.claude-code/open?session=$sid"
 }

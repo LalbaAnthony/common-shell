@@ -13,10 +13,25 @@ function gbd { git branch -d @args }
 function gundo { git reset --soft HEAD~1 }
 function gclear { git reset --hard; git clean -fd }
 function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
-function gpf { git push --force-with-lease }
+function gpf { git push --forc
+# Local branches, most recently committed on first
+function grecent {
+    git for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)' |
+        Select-Object -First 15
+}
 
-function deltainstall { 
+function deltainstall {
+    if (Get-Command delta -ErrorAction SilentlyContinue) {
+        delta --version
+        return
+    }
+
     winget install --id dandavison.delta -e --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to install delta."
+        return
+    }
+
     $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
     delta --version
 }
@@ -52,24 +67,30 @@ function gbdel {
 function gclone {
     param($repoUrl)
 
+    if (-not $repoUrl) {
+        Write-Host "Usage: gclone <repo_url>"
+        return
+    }
+
     $repoName = [System.IO.Path]::GetFileNameWithoutExtension($repoUrl)
     git clone $repoUrl
 
-    if ($LASTEXITCODE -eq 0) {
-        if (Get-Command code -ErrorAction SilentlyContinue) {
-            code $repoName
-        }
-        else {
-            Invoke-Item $repoName
-        }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to clone repository: $repoUrl"
+        return
+    }
+
+    if (Get-Command code -ErrorAction SilentlyContinue) {
+        code $repoName
     }
     else {
-        Write-Host "Failed to clone repository: $repoUrl"
+        Set-Location $repoName
     }
 }
 
 function gacp {
     param($message)
+
     if (-not $message) {
         Write-Host "Usage: gacp <commit_message>"
         return
@@ -86,7 +107,9 @@ function gacp {
     }
 
     git add .
+    if ($LASTEXITCODE -ne 0) { return }
     git commit -m $message
+    if ($LASTEXITCODE -ne 0) { return }
     git push
 }
 
@@ -183,14 +206,23 @@ function ghSetDefaultBranch {
         [string]$Remote = 'origin'
     )
 
+    $url = git remote get-url $Remote 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $url) {
+        Write-Host "No remote '$Remote' found."
+        return
+    }
+
     # Extract OWNER/REPO from https, ssh or scp-style remote URLs
-    $url = git remote get-url $Remote
     if ($url -notmatch '[:/](?<repo>[^/:]+/[^/]+?)(?:\.git)?/?$') {
-        throw "Cannot resolve OWNER/REPO from: $url"
+        Write-Host "Cannot resolve OWNER/REPO from: $url"
+        return
     }
 
     gh api -X PATCH "repos/$($Matches.repo)" -f "default_branch=$Branch" --silent
-    if ($LASTEXITCODE -ne 0) { throw "Failed to set default branch to '$Branch'." }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to set default branch to '$Branch'."
+        return
+    }
 
     git remote set-head $Remote --auto | Out-Null
 }

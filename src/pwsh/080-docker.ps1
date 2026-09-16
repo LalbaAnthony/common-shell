@@ -4,7 +4,7 @@ function drm { docker rm -f @args }
 function dst { docker stats }
 function dim { docker images }
 function dclean { docker system prune -af --volumes }
-function drestart { docker restart $(docker ps -q) }
+function drestart { docker restart $(docker ps -q) } # Restart all running containers
 
 function dps {
     # Default cols minus IMAGE and COMMAND
@@ -94,4 +94,49 @@ function ddown {
     Write-Host "Stopping $($ids.Count) container(s)..."
     docker stop $ids
     Write-Host "All containers stopped."
+}
+
+function dwhere {
+    param($container)
+
+    if (-not $container) {
+        Write-Host "Usage: dwhere <container_name_or_id>"
+        return
+    }
+
+    $id = docker inspect --format '{{.Id}}' $container 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $id) {
+        Write-Host "Container not found: $container"
+        return
+    }
+
+    # A missing label renders as the literal '<no value>', not as an empty string
+    $composeDir     = docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' $container
+    $composeProject = docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' $container
+    $composeService = docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' $container
+
+    if ($composeDir -and $composeDir -ne '<no value>') {
+        Write-Host "Origin: docker-compose"
+        Write-Host "Project:  $composeProject"
+        Write-Host "Service:  $composeService"
+        Write-Host "Dir:      $composeDir"
+    }
+    else {
+        Write-Host "Origin: plain docker run"
+
+        $image   = docker inspect --format '{{.Config.Image}}' $container
+        $restart = docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' $container
+        $ports   = docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}  -p {{(index $b 0).HostPort}}:{{$p}} {{end}}' $container
+
+        Write-Host ""
+        Write-Host "Reconstructed command:"
+        Write-Host "docker run -d \"
+        if ($ports -and $ports.Trim()) { Write-Host "$ports\" }
+        if ($restart -and $restart -ne 'no') { Write-Host "  --restart $restart \" }
+        Write-Host "  $image"
+    }
+
+    Write-Host ""
+    Write-Host "Created:  $(docker inspect --format '{{.Created}}' $container)"
+    Write-Host "Started:  $(docker inspect --format '{{.State.StartedAt}}' $container)"
 }

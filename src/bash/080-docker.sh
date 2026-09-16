@@ -44,7 +44,7 @@ denv() {
 derase() {
     echo "WARNING: This will destroy ALL Docker volumes."
     echo "Current state:"
-    echo "  Volumes: $(docker volume ls -q 2>/dev/null | wc -l)"
+    echo "  Volumes:    $(docker volume ls -q 2>/dev/null | wc -l)"
     echo ""
     read -rp "Type 'ERASE' to confirm: " confirm
 
@@ -57,6 +57,33 @@ derase() {
     docker volume rm $(docker volume ls -q) 2>/dev/null
 
     echo "All Docker volumes removed."
+}
+
+dnuke() {
+    echo "WARNING: This will destroy ALL Docker containers, images, volumes, networks, and build cache."
+    echo "Current state:"
+    echo "  Containers: $(docker ps -aq 2>/dev/null | wc -l)"
+    echo "  Images:     $(docker images -q 2>/dev/null | wc -l)"
+    echo "  Volumes:    $(docker volume ls -q 2>/dev/null | wc -l)"
+    echo ""
+
+    local token confirm
+    token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
+    read -rp "Type '$token' to confirm: " confirm
+
+    if [ "$confirm" != "$token" ]; then
+        echo "Aborted."
+        return 1
+    fi
+
+    # shellcheck disable=SC2046 # word splitting is wanted: one arg per container/volume ID
+    docker rm -f $(docker ps -aq) 2>/dev/null
+    # shellcheck disable=SC2046
+    docker volume rm $(docker volume ls -q) 2>/dev/null
+    docker system prune -a --volumes -f
+    docker builder prune -a -f
+
+    echo "Docker environment wiped."
 }
 
 ddown() {
@@ -86,12 +113,13 @@ dwhere() {
         return 1
     fi
 
+    # A missing label renders as the literal '<no value>', not as an empty string
     local compose_dir compose_project compose_service
     compose_dir=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$1")
     compose_project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$1")
     compose_service=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$1")
 
-    if [ -n "$compose_dir" ]; then
+    if [ -n "$compose_dir" ] && [ "$compose_dir" != "<no value>" ]; then
         echo "Origin: docker-compose"
         echo "Project:  $compose_project"
         echo "Service:  $compose_service"
@@ -99,11 +127,10 @@ dwhere() {
     else
         echo "Origin: plain docker run"
 
-        local image restart ports envs
+        local image restart ports
         image=$(docker inspect --format '{{.Config.Image}}' "$1")
         restart=$(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$1")
         ports=$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}  -p {{(index $b 0).HostPort}}:{{$p}} {{end}}' "$1")
-        envs=$(docker inspect --format '{{range .Config.Env}}  -e {{.}} {{end}}' "$1")
 
         echo ""
         echo "Reconstructed command:"
