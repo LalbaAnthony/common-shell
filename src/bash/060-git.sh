@@ -92,8 +92,7 @@ gclone() {
     git clone "$1"
 
     if [ $? -eq 0 ]; then
-        cd "$repo_name" || return
-        code .
+        code "$repo_name" || cd "$repo_name" || return
     else
         echo "Failed to clone repository: $1"
     fi

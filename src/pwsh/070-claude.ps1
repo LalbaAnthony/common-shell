@@ -1,5 +1,5 @@
 function ccusage { npx ccusage@latest }
-function ccopen { code "$HOME/.claude" }
+function ccopen { Invoke-Item "$HOME/.claude" }
 
 function cctn {
     # resolve most recent session id for cwd, then hand it to the URI handler

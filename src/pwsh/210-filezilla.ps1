@@ -1,5 +1,5 @@
-function fzcode {
-    $sitemanager = Join-Path $env:APPDATA 'FileZilla\sitemanager.xml'
+function fzopen {
+    $sitemanager = Join-Path $env:APPDATA 'FileZilla'
 
-    code $sitemanager
+    Invoke-Item $sitemanager
 }

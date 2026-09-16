@@ -27,9 +27,6 @@ alias again='fc -s' # Repeat last command
 alias h='history | tail -n 30'
 alias hfreq='history | awk "{print \$2}" | sort | uniq -c | sort -nr | head -n 20' # Most frequently used commands
 
-# Location related
-alias weather='curl wttr.in' # Get weather for current location
-
 # Bash
 alias shp='echo "Profile file: ~/.bashrc"'
 
@@ -88,11 +85,6 @@ backupp() {
 # Replace string in all files recursively
 rreplace() {
     grep -rl "$1" . | xargs sed -i "s/$1/$2/g";
-}
-
-# Compare two dirs visually
-diffd() {
-    diff -qr "$1" "$2" | less;
 }
 
 # Reload or restart a systemd service with one command
