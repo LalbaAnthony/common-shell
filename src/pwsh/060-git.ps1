@@ -56,7 +56,12 @@ function gclone {
     git clone $repoUrl
 
     if ($LASTEXITCODE -eq 0) {
-        code $repoName || Invoke-Item $repoName || return
+        if (Get-Command code -ErrorAction SilentlyContinue) {
+            code $repoName
+        }
+        else {
+            Invoke-Item $repoName
+        }
     }
     else {
         Write-Host "Failed to clone repository: $repoUrl"

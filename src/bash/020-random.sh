@@ -27,9 +27,6 @@ alias again='fc -s' # Repeat last command
 alias h='history | tail -n 30'
 alias hfreq='history | awk "{print \$2}" | sort | uniq -c | sort -nr | head -n 20' # Most frequently used commands
 
-# Bash
-alias shp='echo "Profile file: ~/.bashrc"'
-
 # System
 alias syslog='tail -n 1000 /var/log/syslog'
 alias reload='source ~/.bashrc'

@@ -3,3 +3,4 @@
 
 alias cshdel='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)'
 alias cshupd='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/install.sh)'
+alias cshopen='cd ~ ; ls .bash*'

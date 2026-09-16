@@ -15,9 +15,6 @@ function exp { Invoke-Item . }
 # Commands
 function again { Invoke-History }
 
-# PowerShell
-function psp() { Write-Host "Profile file: $PROFILE" }
-
 function mkcd {
     param($path)
     New-Item -ItemType Directory -Path $path -Force | Out-Null
