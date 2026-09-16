@@ -20,23 +20,38 @@ alias gpf='git push --force-with-lease'
 alias grecent='git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15'
 
 deltainstall() {
-    sudo apt install git-delta
-
-    if ! command -v delta >/dev/null; then
-        sudo apt-get update
-        if apt-cache show git-delta >/dev/null 2>&1; then
-            sudo apt-get install -y git-delta
-        else
-            arch=$(dpkg --print-architecture)
-            tag=$(curl -fsSL https://api.github.com/repos/dandavison/delta/releases/latest \
-            | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')
-            deb=$(mktemp --suffix=.deb)
-            curl -fsSL -o "$deb" "https://github.com/dandavison/delta/releases/download/${tag}/git-delta_${tag}_${arch}.deb"
-            sudo dpkg -i "$deb"
-            rm -f "$deb"
-        fi
+    hash -r 2>/dev/null
+    if [ -x "$(command -v delta 2>/dev/null)" ]; then
+        delta --version
+        return 0
     fi
 
+    local arch tag deb tmp target
+    arch=$(dpkg --print-architecture)
+    tag=$(curl -fsSL https://api.github.com/repos/dandavison/delta/releases/latest \
+        | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')
+    [ -n "$tag" ] || { echo "tag resolution failed" >&2; return 1; }
+
+    deb=$(mktemp --suffix=.deb)
+    if curl -fsSL -o "$deb" \
+        "https://github.com/dandavison/delta/releases/download/${tag}/git-delta-musl_${tag}_${arch}.deb"
+    then
+        sudo dpkg -i "$deb"
+    else
+        case "$arch" in
+            amd64) target=x86_64-unknown-linux-musl ;;
+            arm64) target=aarch64-unknown-linux-musl ;;
+            *) echo "unsupported arch: $arch" >&2; rm -f "$deb"; return 1 ;;
+        esac
+        tmp=$(mktemp -d)
+        curl -fsSL "https://github.com/dandavison/delta/releases/download/${tag}/delta-${tag}-${target}.tar.gz" \
+            | tar xz -C "$tmp" --strip-components=1
+        sudo install -m 755 "$tmp/delta" /usr/local/bin/delta
+        rm -rf "$tmp"
+    fi
+    rm -f "$deb"
+
+    hash -r 2>/dev/null
     delta --version
 }
 
