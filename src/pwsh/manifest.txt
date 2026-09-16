@@ -24,10 +24,10 @@
 060-git.ps1
 070-claude.ps1
 080-docker.ps1
-090-shortcuts.ps1
+090-aliases.ps1
 095-env.ps1
 
 # -------- 2NN: PowerShell only --------
-210-filezilla.ps1
 220-vscode.ps1
 230-sleep.ps1
+240-shortcuts.ps1
