@@ -7,14 +7,24 @@ artlogs() {
     tail -f storage/logs/laravel.log | grep --color=always -E "ERROR|CRITICAL|ALERT|EMERGENCY"
 }
 
-artlogsc() {
-    : > storage/logs/laravel.log
-}
-
 artperms() {
     # ! This may be catched by git and show as changes, if git core.fileMode is true in this repo
     sudo chown -R www-data:www-data public storage bootstrap/cache
     sudo chmod -R 775 public storage bootstrap/cache
+}
+
+artdeps() {
+    if [ -f "package-lock.json" ]; then
+        rm -rf node_modules
+        npm i
+        echo "Node modules installed"
+    fi
+
+    if [ -f "composer.lock" ]; then
+        rm -rf vendor
+        composer install
+        echo "Composer dependencies installed"
+    fi
 }
 
 artclear() {
@@ -32,20 +42,6 @@ artdb() {
     php artisan db:seed
 }
 
-artdeps() {
-    if [ -f "package-lock.json" ]; then
-        rm -rf node_modules
-        npm i
-        echo "Node modules installed"
-    fi
-
-    if [ -f "composer.lock" ]; then
-        rm -rf vendor
-        composer install
-        echo "Composer dependencies installed"
-    fi
-}
-
 artreset() {
     artdeps
     echo "Dependencies installed"
@@ -58,5 +54,6 @@ artreset() {
 
     php artisan storage:link
     php artisan key:generate
+    : > storage/logs/laravel.log # Clear the Laravel log file
     echo "Storage linked and app key generated"
 }
