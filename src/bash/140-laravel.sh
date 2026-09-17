@@ -7,6 +7,10 @@ artlogs() {
     tail -f storage/logs/laravel.log | grep --color=always -E "ERROR|CRITICAL|ALERT|EMERGENCY"
 }
 
+artq() {
+    php artisan queue:work --queue=high,default
+}
+
 artperms() {
     # ! This may be catched by git and show as changes, if git core.fileMode is true in this repo
     sudo chown -R www-data:www-data public storage bootstrap/cache
