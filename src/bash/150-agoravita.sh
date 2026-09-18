@@ -19,9 +19,10 @@ atld() {
         return 1
     fi
 
-    npx concurrently -n front,back -c cyan,magenta \
+    npx concurrently -n front,back,back-worker -c cyan,magenta,magenta \
         "cd front && yarn dev" \
-        "cd back && npm run dev"
+        "cd back && npm run dev" \
+        "cd back && php artisan queue:work"
 }
 
 #  -------- Common --------

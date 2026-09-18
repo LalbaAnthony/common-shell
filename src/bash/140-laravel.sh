@@ -8,7 +8,7 @@ artlogs() {
 }
 
 artq() {
-    php artisan queue:work --queue=high,default
+    php artisan queue:work
 }
 
 artperms() {
