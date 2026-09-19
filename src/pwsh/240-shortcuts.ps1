@@ -1,12 +1,15 @@
-function fzopen {
-    $sitemanager = Join-Path $env:APPDATA 'FileZilla'
+function hostsopen {
+    $folder = 'C:\Windows\System32\drivers\etc'
+    Invoke-Item $folder
+}
 
-    Invoke-Item $sitemanager
+function fzopen {
+    $folder = Join-Path $env:APPDATA 'FileZilla'
+    Invoke-Item $folder
 }
 
 function obsopen {
-    $sitemanager = Join-Path $env:APPDATA 'obsidian'
-
-    Invoke-Item $sitemanager
+    $folder = Join-Path $env:APPDATA 'obsidian'
+    Invoke-Item $folder
 }
 
