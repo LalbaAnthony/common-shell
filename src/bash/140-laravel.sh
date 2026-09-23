@@ -8,7 +8,10 @@ artlogs() {
 }
 
 artq() {
-    php artisan queue:work
+    php artisan queue:work --stop-when-empty
+
+    echo "Remaining jobs in the queue:"
+    php artisan tinker --execute="echo DB::table('jobs')->count();"
 }
 
 artperms() {
