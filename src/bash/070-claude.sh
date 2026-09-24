@@ -4,6 +4,10 @@
 alias ccusage='npx ccusage@latest'
 alias ccopen='cd ~/.claude'
 
+pwclean() {
+    find .playwright-mcp -mindepth 1 -delete
+}
+
 cctn() {
     # resolve most recent session id for cwd, then hand it to the URI handler
     local dir sid uri

@@ -1,6 +1,11 @@
 function ccusage { npx ccusage@latest }
 function ccopen { Set-Location "$HOME\.claude" }
 
+function pwclean {
+    Get-ChildItem -LiteralPath .playwright-mcp -Force -ErrorAction SilentlyContinue |
+        Remove-Item -Recurse -Force
+}
+
 function cctn {
     # resolve most recent session id for cwd, then hand it to the URI handler
     $dir = "$HOME\.claude\projects\" + ($PWD.Path -replace '[^a-zA-Z0-9]', '-')
