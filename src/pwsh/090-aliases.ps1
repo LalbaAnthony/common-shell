@@ -64,7 +64,7 @@ function md2docx {
     $output = [IO.Path]::ChangeExtension($source, ".docx")
     $body = [IO.File]::ReadAllBytes($source)
 
-    Invoke-WebRequest -Method Post -Uri "http://127.0.0.1:3005/v1/convert/example?format=docx" `
+    Invoke-WebRequest -Method Post -Uri "https://md2-api.dev-it.app//v1/convert/default?format=docx" `
         -ContentType "text/markdown; charset=utf-8" -Body $body -OutFile $output -UseBasicParsing
 
     Write-Host "Written $output"
