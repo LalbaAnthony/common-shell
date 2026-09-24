@@ -328,3 +328,79 @@ gprune() {
         printf '  %s\n' "${skipped[@]}"
     fi
 }
+
+gcom() {
+    # Suggest a commit message from the staged changes using Claude Code (headless mode)
+    # and copy it to the clipboard. All arguments are joined as an optional hint.
+    #   gcom
+    #   gcom fix race condition on login
+    local hint="$*"
+    local diff log prompt raw msg
+
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+        echo "Not a git repository." >&2
+        return 1
+    }
+
+    command -v claude >/dev/null 2>&1 || {
+        echo "Claude Code CLI not found in PATH." >&2
+        return 1
+    }
+
+    # Staged diff, without lockfiles and minified assets
+    diff=$(git diff --cached -- . ':(exclude)*lock*' ':(exclude)*.min.*')
+    if [ -z "${diff//[[:space:]]/}" ]; then
+        echo "Nothing staged. Run 'git add' first." >&2
+        return 1
+    fi
+    diff=${diff:0:60000}
+
+    # Recent history to match the repo's existing style
+    log=$(git log --oneline -10 2>/dev/null)
+
+    prompt=$(cat <<EOF
+Write one commit message for the staged diff provided on stdin.
+Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
+Match the style of the recent history below when it is consistent.
+Output only the message, no quotes, no code fences, no explanation.
+
+Recent history:
+$log
+EOF
+)
+
+    if [ -n "$hint" ]; then
+        prompt+=$'\n\nContext from the author: '"$hint"
+    fi
+
+    if ! raw=$(printf '%s\n' "$diff" | claude -p --model haiku "$prompt"); then
+        echo "Claude Code failed to produce a message." >&2
+        return 1
+    fi
+    if [ -z "${raw//[[:space:]]/}" ]; then
+        echo "Claude returned no message." >&2
+        return 1
+    fi
+
+    # Drop code fences and blank lines Claude may wrap the message in
+    msg=$(printf '%s\n' "$raw" | sed -e 's/\r$//' -e '/^[[:space:]]*```/d' -e '/^[[:space:]]*$/d')
+
+    echo "$msg"
+
+    if command -v wl-copy >/dev/null 2>&1; then
+        printf '%s' "$msg" | wl-copy
+    elif command -v xclip >/dev/null 2>&1; then
+        printf '%s' "$msg" | xclip -selection clipboard
+    elif command -v xsel >/dev/null 2>&1; then
+        printf '%s' "$msg" | xsel --clipboard --input
+    elif command -v pbcopy >/dev/null 2>&1; then
+        printf '%s' "$msg" | pbcopy
+    elif command -v clip.exe >/dev/null 2>&1; then
+        printf '%s' "$msg" | clip.exe
+    else
+        echo "No clipboard tool found (wl-copy, xclip, xsel, pbcopy, clip.exe); message printed only." >&2
+        return 0
+    fi
+
+    echo "Copied to clipboard."
+}

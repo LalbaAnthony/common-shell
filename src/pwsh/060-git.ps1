@@ -317,3 +317,56 @@ function gprune {
         foreach ($branch in $skipped) { Write-Host "  $branch" }
     }
 }
+
+function gcom {
+    <#
+    .SYNOPSIS
+        Suggest a commit message from staged changes using Claude Code (headless mode)
+        and copy it to the clipboard. All arguments are joined as an optional hint.
+    .EXAMPLE
+        gcom
+        gcom fix race condition on login
+    #>
+    $Hint = $args -join ' '
+
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    $OutputEncoding = [Text.Encoding]::UTF8
+
+    if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
+        Write-Host "Claude Code CLI not found in PATH." -ForegroundColor Red
+        return
+    }
+
+    # Staged diff, without lockfiles and minified assets
+    $diff = (git diff --cached -- . ':(exclude)*lock*' ':(exclude)*.min.*') -join "`n"
+    if ([string]::IsNullOrWhiteSpace($diff)) {
+        Write-Host "Nothing staged. Run 'git add' first." -ForegroundColor Red
+        return
+    }
+    if ($diff.Length -gt 60000) { $diff = $diff.Substring(0, 60000) }
+
+    # Recent history to match the repo's existing style
+    $log = (git log --oneline -10 2>$null) -join "`n"
+
+    $prompt = @"
+Write one commit message for the staged diff provided on stdin.
+Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
+Match the style of the recent history below when it is consistent.
+Output only the message, no quotes, no code fences, no explanation.
+
+Recent history:
+$log
+"@
+    if ($Hint) { $prompt += "`n`nContext from the author: $Hint" }
+
+    $msg = ($diff | claude -p --model haiku $prompt) -join "`n"
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($msg)) {
+        Write-Host "Claude returned no message." -ForegroundColor Red
+        return
+    }
+    $msg = ($msg -replace '^```\w*\s*', '' -replace '\s*```$', '').Trim()
+
+    Write-Host $msg -ForegroundColor Cyan
+    Write-Host "Copied to clipboard." -ForegroundColor DarkGray
+    Set-Clipboard -Value $msg
+}
