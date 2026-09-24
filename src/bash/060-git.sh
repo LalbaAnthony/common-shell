@@ -330,12 +330,14 @@ gprune() {
 }
 
 gcom() {
-    # Suggest a commit message from the staged changes using Claude Code (headless mode)
-    # and copy it to the clipboard. All arguments are joined as an optional hint.
+    # Suggest a commit message using Claude Code (headless mode) and copy it to the
+    # clipboard. Describes the staged diff when something is staged, otherwise the
+    # whole working tree including untracked files, so 'git add' is not required.
+    # All arguments are joined as an optional hint.
     #   gcom
     #   gcom fix race condition on login
     local hint="$*"
-    local diff log prompt raw msg
+    local diff scope log prompt raw msg
 
     git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
         echo "Not a git repository." >&2
@@ -347,19 +349,44 @@ gcom() {
         return 1
     }
 
-    # Staged diff, without lockfiles and minified assets
-    diff=$(git diff --cached -- . ':(exclude)*lock*' ':(exclude)*.min.*')
+    # Lockfiles and minified assets carry no intent worth describing
+    local exclude=(-- . ':(exclude)*lock*' ':(exclude)*.min.*')
+
+    # What is staged is what will be committed, so it wins when it exists
+    diff=$(git diff --cached "${exclude[@]}")
+    scope="staged changes"
+
     if [ -z "${diff//[[:space:]]/}" ]; then
-        echo "Nothing staged. Run 'git add' first." >&2
+        scope="working tree (nothing staged)"
+
+        # On an unborn HEAD there is no commit to diff against yet
+        if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            diff=$(git diff HEAD "${exclude[@]}")
+        else
+            diff=""
+        fi
+
+        # git diff never reports untracked files; synthesise one diff per file
+        local file
+        while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            diff+=$'\n'$(git diff --no-index -- /dev/null "$file" 2>/dev/null)
+        done < <(git ls-files --others --exclude-standard "${exclude[@]}")
+    fi
+
+    if [ -z "${diff//[[:space:]]/}" ]; then
+        echo "Nothing to describe: no changes in the working tree." >&2
         return 1
     fi
     diff=${diff:0:60000}
+
+    echo "Describing $scope."
 
     # Recent history to match the repo's existing style
     log=$(git log --oneline -10 2>/dev/null)
 
     prompt=$(cat <<EOF
-Write one commit message for the staged diff provided on stdin.
+Write one commit message for the diff provided on stdin, which covers the $scope.
 Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
 Match the style of the recent history below when it is consistent.
 Output only the message, no quotes, no code fences, no explanation.
