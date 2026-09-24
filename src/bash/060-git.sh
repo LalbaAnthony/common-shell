@@ -130,6 +130,43 @@ groot() {
     cd "$root" || return 1
 }
 
+# Append a pattern to the repo root .gitignore (current directory outside a repo)
+gitign() {
+    if [ -z "$1" ]; then
+        echo "Usage: gitign <pattern>"
+        return 1
+    fi
+
+    local pattern=$1 root file
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$(pwd -P)
+    file="$root/.gitignore"
+
+    if [ ! -e "$file" ]; then
+        touch "$file" || {
+            echo "Failed to create $file"
+            return 1
+        }
+        echo "Created $file"
+    fi
+
+    # Strip CR so a CRLF file still matches
+    if tr -d '\r' < "$file" | grep -qxF -- "$pattern"; then
+        echo "'$pattern' is already in $file"
+        return 0
+    fi
+
+    # Never glue onto an unterminated last line
+    if [ -s "$file" ] && [ -n "$(tail -c 1 "$file")" ]; then
+        echo >> "$file"
+    fi
+
+    printf '%s\n' "$pattern" >> "$file" || {
+        echo "Failed to write $file"
+        return 1
+    }
+    echo "Added '$pattern' to $file"
+}
+
 gck() {
     if [ -z "$1" ]; then
         echo "Usage: gck <branch_name>"

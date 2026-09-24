@@ -124,6 +124,42 @@ function groot {
     }
 }
 
+# Append a pattern to the repo root .gitignore (current directory outside a repo)
+function gitign {
+    param([string]$pattern)
+
+    if (-not $pattern) {
+        Write-Host "Usage: gitign <pattern>"
+        return
+    }
+
+    $root = git rev-parse --show-toplevel 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $root) {
+        $root = (Get-Location).Path
+    }
+    $file = Join-Path $root '.gitignore'
+
+    if (-not (Test-Path -LiteralPath $file)) {
+        New-Item -ItemType File -Path $file | Out-Null
+        Write-Host "Created $file"
+    }
+
+    $content = [System.IO.File]::ReadAllText($file)
+    $lines = $content -split "\r?\n"
+    if ($lines -contains $pattern) {
+        Write-Host "'$pattern' is already in $file"
+        return
+    }
+
+    # Keep the existing line ending style and never glue onto an unterminated last line
+    $eol = if ($content -match "\r\n") { "`r`n" } else { "`n" }
+    $prefix = if ($content.Length -gt 0 -and -not $content.EndsWith("`n")) { $eol } else { '' }
+
+    # AppendAllText writes UTF-8 without BOM; Add-Content on 5.1 would use the ANSI codepage
+    [System.IO.File]::AppendAllText($file, "$prefix$pattern$eol")
+    Write-Host "Added '$pattern' to $file"
+}
+
 function gck {
     param($branchName)
 
