@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-alias a2log='tail -f /var/log/apache2/error.log'
+alias a2log='tail -f -n 100 /var/log/apache2/error.log'
 alias a2c='sudo apache2ctl configtest'
 alias a2s='sudo systemctl status apache2'
 alias a2r='sudo systemctl reload apache2'
