@@ -69,3 +69,46 @@ sqlexport() {
 
     echo "Exported database '${DB}' to '${OUTFILE}'"
 }
+
+admineri() {
+    local OUTFILE=${1:-adminer.php}
+    local URL="https://www.adminer.org/latest-mysql-en.php"
+
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "curl is required"
+        return 1
+    fi
+
+    if [ -e "$OUTFILE" ]; then
+        local REPLY
+        read -r -p "'$OUTFILE' already exists. Overwrite? [y/N] " REPLY
+        case "$REPLY" in
+            [Yy]*) ;;
+            *) echo "Aborted."; return 1 ;;
+        esac
+    fi
+
+    # Download to a sibling temp file so a failed fetch cannot truncate an existing copy
+    local TMP
+    TMP=$(mktemp "${OUTFILE}.XXXXXX") || return 1
+
+    # -L is required: the URL is a redirect to the current release
+    if ! curl -fsSL "$URL" -o "$TMP"; then
+        rm -f "$TMP"
+        echo "Download FAILED from $URL"
+        return 1
+    fi
+
+    # A mirror can answer 200 with an HTML error page; only a PHP script is usable
+    if ! head -c 5 "$TMP" | grep -q '<?php'; then
+        rm -f "$TMP"
+        echo "Downloaded file is not a PHP script, aborting."
+        return 1
+    fi
+
+    # mktemp creates 600; the web server has to be able to read it
+    chmod 644 "$TMP" || { rm -f "$TMP"; return 1; }
+    mv "$TMP" "$OUTFILE" || { rm -f "$TMP"; return 1; }
+
+    echo "Saved Adminer ($(du -h "$OUTFILE" | cut -f1)) to '$OUTFILE'"
+}
