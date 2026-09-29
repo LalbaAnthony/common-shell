@@ -42,7 +42,7 @@ alias topcpu='ps aux --sort=-%cpu | head -n 11' # Top 10 CPU consumers
 alias topmem='ps aux --sort=-%mem | head -n 11' # Top 10 RAM consumers
 
 # Open the current directory in the file explorer
-exp() {
+expl() {
     if command -v xdg-open >/dev/null 2>&1; then
         xdg-open . >/dev/null 2>&1 &
     elif command -v open >/dev/null 2>&1; then

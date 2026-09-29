@@ -65,7 +65,7 @@ function topcpu { Get-Process | Sort-Object CPU -Descending | Select-Object -Fir
 function topmem { Get-Process | Sort-Object WS -Descending | Select-Object -First 10 Name, Id, CPU, WS } # Top 10 RAM consumers
 
 # Open the current directory in the file explorer
-function exp { Invoke-Item . }
+function expl { Invoke-Item . }
 
 # Create a folder and cd into it
 function mkcd {
