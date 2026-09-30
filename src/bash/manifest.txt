@@ -33,4 +33,5 @@
 120-certbot.sh
 130-php.sh
 140-laravel.sh
-150-agoravita.sh
+150-wordpress.sh
+190-agoravita.sh
