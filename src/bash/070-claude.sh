@@ -35,3 +35,25 @@ cctn() {
         return 1
     fi
 }
+
+cscratchpad() {
+    # list the 30 most recently modified files across all Claude Code scratchpads
+    local base="${TMPDIR:-${TEMP:-/tmp}}/claude"
+
+    if [ ! -d "$base" ]; then
+        echo "no claude temp dir found at $base" >&2
+        return 1
+    fi
+
+    {
+        printf 'LastWriteTime\tProject\tSession\tName\tLength\tFullName\n'
+        find "$base" -type f -path '*/scratchpad/*' \
+            -printf '%T@\t%TY-%Tm-%Td %TH:%TM:%TS\t%P\t%s\t%p\n' 2>/dev/null |
+            sort -t $'\t' -k1,1 -rn |
+            head -30 |
+            awk -F'\t' '{
+                n = split($3, p, "/")
+                printf "%s\t%s\t%s\t%s\t%s\t%s\n", substr($2, 1, 19), p[1], substr(p[2], 1, 8), p[n], $4, $5
+            }'
+    } | column -t -s $'\t'
+}
