@@ -10,14 +10,14 @@ alias nstart='npm start'
 alias nout='npm outdated'
 alias nls='npm list -g --depth=0' # Global packages
 alias nci='npm ci' # Clean install from lockfile
-alias nsetup='rm -rf node_modules && rm -rf .vite .cache && rm -rf package-lock.json && npm i'
+alias nsetup='rm -rf node_modules && rm -rf .vite .nuxt .cache && rm -rf package-lock.json && npm i'
 
 alias yr='yarn run'
 alias yrb='yarn run build'
 alias yrd='yarn run dev'
 alias yrt='yarn run test'
 alias ystart='yarn start'
-alias ysetup='rm -rf node_modules && rm -rf .vite .cache && rm -rf yarn.lock && yarn install'
+alias ysetup='rm -rf node_modules && rm -rf .vite .nuxt .cache && rm -rf yarn.lock && yarn install'
 
 # Run npm run dev in front(end)/ and back(end)/ folders concurrently
 npdev() {

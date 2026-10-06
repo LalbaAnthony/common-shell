@@ -8,7 +8,7 @@ function nout { npm outdated }
 function nls { npm list -g --depth=0 } # Global packages
 function nci { npm ci } # Clean install from lockfile
 function nsetup {
-    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue node_modules, .vite, .cache, package-lock.json
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue node_modules, .vite, .nuxt, .cache, package-lock.json
     npm i
 }
 
@@ -18,7 +18,7 @@ function yrt { yarn run test }
 function yrd { yarn run dev }
 function ystart { yarn start }
 function ysetup {
-    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue node_modules, .vite, .cache, yarn.lock
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue node_modules, .vite, .nuxt, .cache, yarn.lock
     yarn install
 }
 
