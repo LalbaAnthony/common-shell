@@ -15,7 +15,7 @@ function mdclean {
 }
 
 function ayc {
-    anthomigration
+    anthomigr
     Write-Host "`n"
     gyc
     Write-Host "`n"
