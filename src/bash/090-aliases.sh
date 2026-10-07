@@ -11,13 +11,9 @@ mdclean () {
 }
 
 ayc () {
-    anthomigrations
+    cshmigr
     echo "" 
     cshupd
-}
-
-anthomigrations () {
-    bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-migrations/main/src/main.sh)
 }
 
 md2docx () {
@@ -35,7 +31,7 @@ md2docx () {
         output="${source}.docx"
     fi
 
-    curl -sS --fail -X POST "https://md2-api.dev-it.app//v1/convert/default?format=docx" \
+    curl -sS --fail -X POST "https://md2-api.dev-it.app/v1/convert/default?format=docx" \
         -H "Content-Type: text/markdown; charset=utf-8" \
         --data-binary "@${source}" -o "$output" || return 1
 
