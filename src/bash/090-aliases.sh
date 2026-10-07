@@ -11,7 +11,13 @@ mdclean () {
 }
 
 ayc () {
+    anthomigr
+    echo "" 
     cshupd
+}
+
+anthomigr () {
+    bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-migrations/main/src/main.sh)
 }
 
 md2docx () {
