@@ -15,14 +15,14 @@ function mdclean {
 }
 
 function ayc {
-    anthomigr
+    anthomigrations
     Write-Host "`n"
     gyc
     Write-Host "`n"
     cshupd
 }
 
-function anthomigr {
+function anthomigrations {
     Invoke-RestMethod https://raw.githubusercontent.com/LalbaAnthony/antho-migrations/main/src/main.ps1 | Invoke-Expression
 }
 

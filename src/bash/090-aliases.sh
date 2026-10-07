@@ -11,12 +11,12 @@ mdclean () {
 }
 
 ayc () {
-    anthomigr
+    anthomigrations
     echo "" 
     cshupd
 }
 
-anthomigr () {
+anthomigrations () {
     bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/antho-migrations/main/src/main.sh)
 }
 
