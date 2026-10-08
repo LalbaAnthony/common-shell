@@ -14,14 +14,6 @@ function mdclean {
     npx @lalba-anthony/md-cleaner $file
 }
 
-function ayc {
-    cshmigr
-    Write-Host "`n"
-    gyc
-    Write-Host "`n"
-    cshupd
-}
-
 function md2docx {
     param($path)
 

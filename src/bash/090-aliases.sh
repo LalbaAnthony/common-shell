@@ -10,12 +10,6 @@ mdclean () {
     npx @lalba-anthony/md-cleaner $1
 }
 
-ayc () {
-    cshmigr
-    echo "" 
-    cshupd
-}
-
 md2docx () {
     if [ -z "$1" ]; then
         echo "Usage: md2docx <path>"
