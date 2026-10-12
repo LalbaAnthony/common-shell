@@ -39,7 +39,8 @@ devs() {
     # preset table: one line per preset, same position in both arrays
     local names=() cmds=()
     names+=("extranet");          cmds+=("$a2disall && sudo a2ensite dev-111-extranet.conf && $a2restart && $node22")
-    names+=("nuxt-wp");           cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("nuxt-wp-php7.4");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php7.4.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("nuxt-wp-php8.3");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php8.3.conf && $a2enmaildev && $a2restart && $node22")
     names+=("atlas");             cmds+=("$a2disall && sudo a2ensite dev-111-atlas.conf && $a2enmaildev && $a2restart && $node22")
     names+=("ample-php5.6");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php5.6.conf && $a2restart && ${setphp}5.6")
     names+=("ample-php7.0");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php7.0.conf && $a2restart && ${setphp}7.0")
