@@ -11,7 +11,6 @@ function gds { git diff --shortstat "origin/$(git rev-parse --abbrev-ref HEAD)" 
 function gdf { git diff --stat "origin/$(git rev-parse --abbrev-ref HEAD)" } # Same as gds, but one line per file
 function gbd { git branch -d @args }
 function gundo { git reset --soft HEAD~1 }
-function gclear { git reset --hard; git clean -fd }
 function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
 function gpf { git push --force-with-lease }
 
@@ -35,6 +34,20 @@ function deltainstall {
 
     $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
     delta --version
+}
+
+function gclear {
+    $token = -join ((1..6) | ForEach-Object { [char][int]((65..90) + (48..57) | Get-Random) })
+    $confirm = Read-Host "Type '$token' to confirm"
+
+    if ($confirm -cne $token) {
+        Write-Host "Aborted."
+        return
+    }
+    git reset --hard
+    git clean -fd
+
+    Write-Host "Repository cleared."
 }
 
 function grestore {

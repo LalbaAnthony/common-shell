@@ -14,7 +14,6 @@ alias gds='git diff --shortstat origin/$(git rev-parse --abbrev-ref HEAD)'
 alias gdf='git diff --stat origin/$(git rev-parse --abbrev-ref HEAD)' # Same as gds, but one line per file
 alias gbd='git branch -d'
 alias gundo='git reset --soft HEAD~1'
-alias gclear='git reset --hard && git clean -fd'
 alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
 alias grecent='git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15'
@@ -53,6 +52,22 @@ deltainstall() {
 
     hash -r 2>/dev/null
     delta --version
+}
+
+gclear () {
+    local token confirm
+    token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
+    read -rp "Type '$token' to confirm: " confirm
+
+    if [ "$confirm" != "$token" ]; then
+        echo "Aborted."
+        return 1
+    fi
+
+    git reset --hard
+    git clean -fd
+
+    echo "Repository cleared."
 }
 
 grestore() {
