@@ -1,10 +1,12 @@
+#!/bin/bash
+
 if [ "$HOSTNAME" = "SRV-DEV-ROSE-04" ]; then # AGORA
     # cshdel
-    # ...
+    :
 elif [ "$HOSTNAME" = "vps-33aa7a06" ]; then # BRZ
-    # ...
+    :
 elif [ "$HOSTNAME" = "srv700069" ]; then # PERSO
-    # ...
+    :
 elif [ "$HOSTNAME" = "raspberrypi" ]; then # RASPBERRYPI
-    # ...
+    :
 fi
