@@ -2,6 +2,7 @@
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
 alias cshdel='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)'
-alias cshupd='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/install.sh)'
 alias cshmgr='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/migration.sh)'
+alias cshupd='bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/install.sh)'
+alias cshall='cshmgr ; cshupd'
 alias cshopen='cd ~ ; ls -la .bashrc .bashrc_extra 2>/dev/null' # Go home and show the shell config files
