@@ -103,7 +103,7 @@ function Register-StartupShortcut {
     try {
         $shortcut = $shell.CreateShortcut($linkPath)
         $shortcut.TargetPath = Join-Path $PSHOME $exeName
-        $shortcut.Arguments = '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "Start-Transcript (Join-Path $env:TEMP common-shell-cshall.log) | Out-Null; . (Join-Path $HOME profile_extra.ps1); cshall"'
+        $shortcut.Arguments = '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command ". (Join-Path $HOME profile_extra.ps1); cshall"'
         $shortcut.WindowStyle = 7
         $shortcut.WorkingDirectory = $HOME
         $shortcut.Description = 'common-shell: run cshall at login'
