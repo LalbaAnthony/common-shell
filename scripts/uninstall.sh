@@ -8,6 +8,33 @@ BASHRC_FILE="$HOME/.bashrc"
 # Must stay byte-identical to the hook written by install.sh.
 BASHRC_HOOK='[ -f ~/.bashrc_extra ] && . ~/.bashrc_extra'
 
+# Must stay identical to the unit paths in install.sh.
+UNIT_NAME="common-shell-cshall.service"
+UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+UNIT_FILE="$UNIT_DIR/$UNIT_NAME"
+
+has_user_systemd() {
+    command -v systemctl > /dev/null 2>&1 && systemctl --user show-environment > /dev/null 2>&1
+}
+
+unregister_login_service() {
+    if [ ! -f "$UNIT_FILE" ]; then
+        echo "$UNIT_FILE not found, skipping."
+        return
+    fi
+
+    echo "Removing $UNIT_FILE..."
+    if has_user_systemd; then
+        # --now also stops an instance still running from this login.
+        systemctl --user disable --now "$UNIT_NAME"
+        rm -f "$UNIT_FILE"
+        systemctl --user daemon-reload
+    else
+        # No manager to ask, so undo by hand the symlink `enable` created.
+        rm -f "$UNIT_DIR/default.target.wants/$UNIT_NAME" "$UNIT_FILE"
+    fi
+}
+
 remove_extra() {
     if [ -f "$EXTRA_FILE" ]; then
         echo "Removing $EXTRA_FILE..."
@@ -62,6 +89,8 @@ unregister_from_bashrc() {
 }
 
 main() {
+    # First, so nothing is left scheduled against a profile that is gone.
+    unregister_login_service
     remove_extra
     unregister_from_bashrc
     echo "Bash extra uninstalled successfully!"

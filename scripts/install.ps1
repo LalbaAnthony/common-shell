@@ -11,6 +11,9 @@ $ExtraFile   = Join-Path $HOME "profile_extra.ps1"
 $ProfileFile = $PROFILE
 $ProfileHook = 'if (Test-Path "$HOME\profile_extra.ps1") { . "$HOME\profile_extra.ps1" }'
 
+# Must stay identical to uninstall.ps1, which removes the shortcut by this name.
+$StartupLinkName = "common-shell-cshall.lnk"
+
 function Get-RemoteText {
     param([Parameter(Mandatory)] [string] $Uri)
 
@@ -78,6 +81,40 @@ function Register-InProfile {
     }
 }
 
+function Register-StartupShortcut {
+    # Not $IsWindows: that variable does not exist on Windows PowerShell 5.1,
+    # and StrictMode turns the read into an error.
+    if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
+        Write-Host "No Startup folder on this platform, skipping startup shortcut."
+        return
+    }
+
+    # shell:startup. Resolved through the known-folder API, so it follows
+    # folder redirection rather than assuming %APPDATA%.
+    $startupDir = [Environment]::GetFolderPath('Startup')
+    $linkPath = Join-Path $startupDir $StartupLinkName
+
+    # The edition that ran this installer is the one whose $PROFILE now holds
+    # the hook. $PSHOME rather than the current process path, which is the
+    # wrong executable under ISE or another embedding host.
+    $exeName = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh.exe' } else { 'powershell.exe' }
+
+    Write-Host "Installing $linkPath..."
+    $shell = New-Object -ComObject WScript.Shell
+    try {
+        $shortcut = $shell.CreateShortcut($linkPath)
+        $shortcut.TargetPath = Join-Path $PSHOME $exeName
+        # Profile is loaded (no -NoProfile), which is what defines cshall.
+        # -NoExit keeps the window open so the forecast can be read.
+        $shortcut.Arguments = '-NoLogo -NoExit -Command cshall'
+        $shortcut.WorkingDirectory = $HOME
+        $shortcut.Description = 'common-shell: run cshall at login'
+        $shortcut.Save()
+    } finally {
+        [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell)
+    }
+}
+
 function Invoke-ProfileReload {
     Write-Host "Reloading profile..."
     # dot-sourcing may not propagate to the parent shell when run via iex
@@ -87,6 +124,7 @@ function Invoke-ProfileReload {
 function Main {
     Get-Extra
     Register-InProfile
+    Register-StartupShortcut
     Invoke-ProfileReload
     Write-Host "PowerShell extra installed successfully!"
 }

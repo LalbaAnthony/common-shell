@@ -12,6 +12,11 @@ EXTRA_FILE="$HOME/.bashrc_extra"
 BASHRC_FILE="$HOME/.bashrc"
 BASHRC_HOOK='[ -f ~/.bashrc_extra ] && . ~/.bashrc_extra'
 
+# Must stay identical to uninstall.sh, which removes the unit by these paths.
+UNIT_NAME="common-shell-cshall.service"
+UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+UNIT_FILE="$UNIT_DIR/$UNIT_NAME"
+
 # Set while the concatenation is in flight, cleared once it lands.
 TMP_FILE=""
 
@@ -76,6 +81,42 @@ register_in_bashrc() {
     fi
 }
 
+# False on macOS, Git Bash, WSL without systemd, containers, and `su` shells
+# that have no XDG_RUNTIME_DIR to reach the user manager through.
+has_user_systemd() {
+    command -v systemctl > /dev/null 2>&1 && systemctl --user show-environment > /dev/null 2>&1
+}
+
+register_login_service() {
+    if ! has_user_systemd; then
+        echo "No reachable systemd user manager, skipping login service."
+        return
+    fi
+
+    echo "Installing $UNIT_FILE..."
+    mkdir -p "$UNIT_DIR"
+
+    # Type=simple, not oneshot: logind holds the login until the user manager
+    # reaches default.target, so a oneshot would block every first login on
+    # npx and the network. Non-interactive bash does not read ~/.bashrc, hence
+    # the explicit source. Output goes to `journalctl --user -u common-shell-cshall`.
+    cat > "$UNIT_FILE" << 'EOF'
+[Unit]
+Description=common-shell: run cshall at login
+ConditionPathExists=%h/.bashrc_extra
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c '. "%h/.bashrc_extra"; cshall'
+
+[Install]
+WantedBy=default.target
+EOF
+
+    systemctl --user daemon-reload
+    systemctl --user enable "$UNIT_NAME"
+}
+
 reload_shell() {
     echo "Reloading shell..."
     # source may not propagate to the parent shell when run via curl | bash
@@ -86,6 +127,7 @@ reload_shell() {
 main() {
     download_extra
     register_in_bashrc
+    register_login_service
     reload_shell
     echo "Bash extra installed successfully!"
 }

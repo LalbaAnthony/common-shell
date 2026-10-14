@@ -7,6 +7,24 @@ $ProfileFile = $PROFILE
 # Must stay byte-identical to the hook written by install.ps1.
 $ProfileHook = 'if (Test-Path "$HOME\profile_extra.ps1") { . "$HOME\profile_extra.ps1" }'
 
+# Must stay identical to the shortcut name written by install.ps1.
+$StartupLinkName = "common-shell-cshall.lnk"
+
+function Unregister-StartupShortcut {
+    if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
+        Write-Host "No Startup folder on this platform, skipping startup shortcut."
+        return
+    }
+
+    $linkPath = Join-Path ([Environment]::GetFolderPath('Startup')) $StartupLinkName
+    if (Test-Path -LiteralPath $linkPath) {
+        Write-Host "Removing $linkPath..."
+        Remove-Item -LiteralPath $linkPath -Force
+    } else {
+        Write-Host "$linkPath not found, skipping."
+    }
+}
+
 function Uninstall-Extra {
     if (Test-Path $ExtraFile) {
         Write-Host "Removing $ExtraFile..."
@@ -55,6 +73,8 @@ function Unregister-FromProfile {
 }
 
 function Main {
+    # First, so nothing is left launching against a profile that is gone.
+    Unregister-StartupShortcut
     Uninstall-Extra
     Unregister-FromProfile
     Write-Host "PowerShell extra uninstalled successfully!"
