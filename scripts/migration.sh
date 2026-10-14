@@ -9,6 +9,5 @@ elif [ "$HOSTNAME" = "vps-33aa7a06" ]; then # BRZ
 elif [ "$HOSTNAME" = "srv700069" ]; then # PERSO
     :
 elif [ "$HOSTNAME" = "raspberrypi" ]; then # RASPBERRYPI
-    touch /tmp/test-raspberrypi.txt
     :
 fi
