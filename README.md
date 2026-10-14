@@ -36,9 +36,7 @@ irm https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uni
 
 ### Run at login
 
-The installer also registers `cshall` to run at login, and uninstall removes it.
-On Linux it is a `systemd --user` unit, `common-shell-cshall.service`, whose output goes to `journalctl --user -u common-shell-cshall`; it is skipped where no systemd user manager is reachable.
-On Windows it is a `common-shell-cshall.lnk` shortcut in `shell:startup` that opens a PowerShell window.
+The installer also registers `cshall` to run in the background at login, and uninstall removes it. On Linux it is a `systemd --user` unit, `common-shell-cshall.service`, whose output goes to `journalctl --user -u common-shell-cshall`; it is skipped where no systemd user manager is reachable. On Windows it is a `common-shell-cshall.lnk` shortcut in `shell:startup` that runs a hidden PowerShell and records the run in `%TEMP%\common-shell-cshall.log`.
 
 ## 🔄 Migrate from an older version
 

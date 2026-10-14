@@ -96,10 +96,14 @@ register_login_service() {
     echo "Installing $UNIT_FILE..."
     mkdir -p "$UNIT_DIR"
 
-    # Type=simple, not oneshot: logind holds the login until the user manager
-    # reaches default.target, so a oneshot would block every first login on
-    # npx and the network. Non-interactive bash does not read ~/.bashrc, hence
-    # the explicit source. Output goes to `journalctl --user -u common-shell-cshall`.
+    # Runs detached from any terminal. Type=simple, not oneshot: logind holds
+    # the login until the user manager reaches default.target, so a oneshot
+    # would block every first login on the network. Non-interactive bash does
+    # not read ~/.bashrc, hence the explicit source. cshall is an alias chain,
+    # and non-interactive bash expands no aliases: expand_aliases enables it,
+    # and eval defers the lookup to after the source - an alias used on the
+    # same line that defines it is never expanded. Output goes to
+    # `journalctl --user -u common-shell-cshall`.
     cat > "$UNIT_FILE" << 'EOF'
 [Unit]
 Description=common-shell: run cshall at login
@@ -107,7 +111,7 @@ ConditionPathExists=%h/.bashrc_extra
 
 [Service]
 Type=simple
-ExecStart=/bin/bash -c '. "%h/.bashrc_extra"; cshall'
+ExecStart=/bin/bash -O expand_aliases -c '. "%h/.bashrc_extra"; eval cshall'
 
 [Install]
 WantedBy=default.target

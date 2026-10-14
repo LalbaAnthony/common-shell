@@ -94,9 +94,8 @@ function Register-StartupShortcut {
     $startupDir = [Environment]::GetFolderPath('Startup')
     $linkPath = Join-Path $startupDir $StartupLinkName
 
-    # The edition that ran this installer is the one whose $PROFILE now holds
-    # the hook. $PSHOME rather than the current process path, which is the
-    # wrong executable under ISE or another embedding host.
+    # Same edition as this installer. $PSHOME rather than the current process
+    # path, which is the wrong executable under ISE or another embedding host.
     $exeName = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh.exe' } else { 'powershell.exe' }
 
     Write-Host "Installing $linkPath..."
@@ -104,9 +103,8 @@ function Register-StartupShortcut {
     try {
         $shortcut = $shell.CreateShortcut($linkPath)
         $shortcut.TargetPath = Join-Path $PSHOME $exeName
-        # Profile is loaded (no -NoProfile), which is what defines cshall.
-        # -NoExit keeps the window open so the forecast can be read.
-        $shortcut.Arguments = '-NoLogo -NoExit -Command cshall'
+        $shortcut.Arguments = '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "Start-Transcript (Join-Path $env:TEMP common-shell-cshall.log) | Out-Null; . (Join-Path $HOME profile_extra.ps1); cshall"'
+        $shortcut.WindowStyle = 7
         $shortcut.WorkingDirectory = $HOME
         $shortcut.Description = 'common-shell: run cshall at login'
         $shortcut.Save()

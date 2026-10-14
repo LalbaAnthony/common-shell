@@ -9,6 +9,8 @@ $ProfileHook = 'if (Test-Path "$HOME\profile_extra.ps1") { . "$HOME\profile_extr
 
 # Must stay identical to the shortcut name written by install.ps1.
 $StartupLinkName = "common-shell-cshall.lnk"
+# Must stay identical to the transcript path in that shortcut's arguments.
+$StartupLogName = "common-shell-cshall.log"
 
 function Unregister-StartupShortcut {
     if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
@@ -22,6 +24,18 @@ function Unregister-StartupShortcut {
         Remove-Item -LiteralPath $linkPath -Force
     } else {
         Write-Host "$linkPath not found, skipping."
+    }
+
+    $logPath = Join-Path $env:TEMP $StartupLogName
+    if (Test-Path -LiteralPath $logPath) {
+        Write-Host "Removing $logPath..."
+        try {
+            Remove-Item -LiteralPath $logPath -Force
+        } catch {
+            # Locked when cshall's migration step calls cshdel: this script
+            # then runs inside the login run that holds the transcript open.
+            Write-Warning "Could not remove ${logPath}: $($_.Exception.Message)"
+        }
     }
 }
 

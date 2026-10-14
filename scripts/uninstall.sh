@@ -25,8 +25,9 @@ unregister_login_service() {
 
     echo "Removing $UNIT_FILE..."
     if has_user_systemd; then
-        # --now also stops an instance still running from this login.
-        systemctl --user disable --now "$UNIT_NAME"
+        # No --now: when cshall's migration step calls cshdel, this script
+        # runs inside the unit, and stopping the unit would kill it halfway.
+        systemctl --user disable "$UNIT_NAME"
         rm -f "$UNIT_FILE"
         systemctl --user daemon-reload
     else

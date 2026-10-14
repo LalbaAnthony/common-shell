@@ -1,6 +1,7 @@
 #!/bin/bash
 
 if [ "$HOSTNAME" = "SRV-DEV-ROSE-04" ]; then # AGORA
+    # rm -rf /var/www/html
     # cshdel
     :
 elif [ "$HOSTNAME" = "vps-33aa7a06" ]; then # BRZ
