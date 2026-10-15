@@ -4,8 +4,142 @@
 alias ccusage='npx ccusage@latest'
 alias ccopen='cd ~/.claude'
 
-pwclean() {
-    find .playwright-mcp -mindepth 1 -delete
+ccl() {
+    # plan usage limits as shown by /usage, read from the endpoint Claude Code itself queries
+    local raw=0 cred_file creds auth token expired resp status body msg rows
+    local width=0 label pct left filled bar_on bar_off color dim off reset d h m
+
+    case ${1-} in
+        '') ;;
+        --json) raw=1 ;;
+        *) echo "usage: cclimits [--json]" >&2; return 2 ;;
+    esac
+
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "cclimits needs jq" >&2
+        return 1
+    fi
+
+    cred_file="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json"
+    if [ -r "$cred_file" ]; then
+        creds=$(cat "$cred_file") || return 1
+    elif command -v security >/dev/null 2>&1; then
+        # macOS keeps the credentials in the login keychain instead of a file
+        creds=$(security find-generic-password -s 'Claude Code-credentials' -w 2>/dev/null)
+    fi
+    if [ -z "$creds" ]; then
+        echo "no Claude Code credentials found ($cred_file); log in with a claude.ai account first" >&2
+        return 1
+    fi
+
+    # token last: read collapses a leading empty field when IFS is a tab
+    auth=$(jq -r '.claudeAiOauth // {}
+        | [((.expiresAt // 0) as $e | $e > 0 and $e <= now * 1000), (.accessToken // "")]
+        | @tsv' <<<"$creds") || return 1
+    # jq.exe (Git Bash) ends lines with CRLF
+    auth=${auth//$'\r'/}
+    IFS=$'\t' read -r expired token <<<"$auth"
+    if [ -z "$token" ]; then
+        echo "no claude.ai OAuth token in the credentials (API-key logins have no plan limits)" >&2
+        return 1
+    fi
+    if [ "$expired" = true ]; then
+        echo "OAuth token expired; start Claude Code once to refresh it, then retry" >&2
+        return 1
+    fi
+
+    # header goes through stdin so the token never shows up in the process list
+    resp=$(printf 'Authorization: Bearer %s\n' "$token" |
+        curl -sS --max-time 10 -H @- -H 'anthropic-beta: oauth-2025-04-20' \
+            -w '\n%{http_code}' https://api.anthropic.com/api/oauth/usage) || return 1
+    status=${resp##*$'\n'}
+    body=${resp%$'\n'*}
+
+    if [ "$status" != 200 ]; then
+        msg=$(jq -r '.error.message // empty' <<<"$body" 2>/dev/null)
+        echo "usage request failed: HTTP $status${msg:+ - $msg}" >&2
+        if [ "$status" = 401 ]; then
+            echo "start Claude Code once to refresh its token, then retry" >&2
+        fi
+        return 1
+    fi
+
+    if [ "$raw" = 1 ]; then
+        jq . <<<"$body"
+        return
+    fi
+
+    # one row per limit object, in API order: label, rounded %, seconds until reset
+    # (empty when the API gives no reset time, '?' when it cannot be parsed)
+    rows=$(jq -r '
+        def cap: (.[0:1] | ascii_upcase) + .[1:];
+        to_entries[]
+        | select((.value | type) == "object" and (.value.utilization | type) == "number")
+        | (.key
+            | if . == "five_hour" then "Session (5h)"
+              elif . == "seven_day" then "Weekly (7d)"
+              elif startswith("seven_day_") then "Weekly " + (.[10:] | gsub("_"; " ") | cap)
+              else gsub("_"; " ") | cap
+              end) as $label
+        | (.value.resets_at
+            | if type == "string"
+              then (try (sub("\\.[0-9]+"; "") | sub("(Z|[+-]00:?00)$"; "Z") | fromdateiso8601 - now | floor) catch "?")
+              else null
+              end) as $left
+        | [$label, (.value.utilization + 0.5 | floor), $left]
+        | @tsv' <<<"$body") || return 1
+    rows=${rows//$'\r'/}
+
+    if [ -z "$rows" ]; then
+        echo "no usage limits in the response; inspect it with 'cclimits --json'" >&2
+        return 1
+    fi
+
+    while IFS=$'\t' read -r label pct left; do
+        if [ "${#label}" -gt "$width" ]; then
+            width=${#label}
+        fi
+    done <<<"$rows"
+
+    dim='' off=''
+    if [ -t 1 ]; then
+        dim=$'\e[90m' off=$'\e[0m'
+    fi
+
+    while IFS=$'\t' read -r label pct left; do
+        # 20 cells, one per 5%, clamped for utilization above 100
+        filled=$(( (pct + 2) / 5 ))
+        if [ "$filled" -gt 20 ]; then filled=20; fi
+        if [ "$filled" -lt 0 ]; then filled=0; fi
+        bar_on=$(printf '%*s' "$filled" '')
+        bar_off=$(printf '%*s' $(( 20 - filled )) '')
+        bar_on=${bar_on// /█}
+        bar_off=${bar_off// /░}
+
+        color=''
+        if [ -t 1 ]; then
+            if [ "$pct" -ge 80 ]; then color=$'\e[31m'
+            elif [ "$pct" -ge 50 ]; then color=$'\e[33m'
+            else color=$'\e[32m'
+            fi
+        fi
+
+        case $left in
+            '') reset='' ;;
+            '?') reset='resets ?' ;;
+            *)
+                if [ "$left" -lt 0 ]; then left=0; fi
+                d=$(( left / 86400 )) h=$(( left % 86400 / 3600 )) m=$(( left % 3600 / 60 ))
+                if [ "$d" -gt 0 ]; then reset="resets in ${d}d ${h}h"
+                elif [ "$h" -gt 0 ]; then reset="resets in ${h}h ${m}m"
+                else reset="resets in ${m}m"
+                fi
+                ;;
+        esac
+
+        printf '%-*s  %s%s%s%s%s %3d%%  %s%s%s\n' \
+            "$width" "$label" "$color" "$bar_on" "$dim" "$bar_off" "$off" "$pct" "$dim" "$reset" "$off"
+    done <<<"$rows"
 }
 
 cctn() {
@@ -56,4 +190,8 @@ cscratchpad() {
                 printf "%s\t%s\t%s\t%s\t%s\t%s\n", substr($2, 1, 19), p[1], substr(p[2], 1, 8), p[n], $4, $5
             }'
     } | column -t -s $'\t'
+}
+
+pwclean() {
+    find .playwright-mcp -mindepth 1 -delete
 }
