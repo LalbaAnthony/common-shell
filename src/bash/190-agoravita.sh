@@ -11,6 +11,16 @@ kwc() {
     php artisan kronos:wordpress:configure
 }
 
+kdev() {
+    if [ ! -d "front" ] && [ ! -d "back" ]; then
+        echo "No front/ or back/ directory here"
+        return 1
+    fi
+
+    npx concurrently -n front -c cyan \
+        "cd front && yarn dev"
+}
+
 #  -------- Atlas --------
 
 atld() {
