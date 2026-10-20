@@ -38,33 +38,18 @@ function md2docx {
     Write-Host "Written $output"
 }
 
-function gyc {
-    $scriptPaths = @(
-        (Join-Path $env:USERPROFILE 'projects\antho-scripts\git\git_sync_repos.py')
-    )
-
-    $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-
-    if (-not $scriptPath) {
-        Write-Host "git_sync_repos.py script not found."
-        return
-    }
-
-    python $scriptPath
-}
-
 function fzc {
-    $scriptPaths = @(
+    $candidates = @(
         (Join-Path $env:USERPROFILE 'projects\filezilla-companion\src\main.py')
     )
 
-    $scriptPath = $scriptPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+    $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-    if (-not $scriptPath) {
+    if (-not $found) {
         Write-Host "FileZilla Companion script not found."
         return
     }
 
-    Start-Process powershell -ArgumentList "python `"$scriptPath`"" # Open in a new PowerShell window
+    Start-Process powershell -ArgumentList "python `"$found`"" # Open in a new PowerShell window
 }
 

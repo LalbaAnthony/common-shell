@@ -36,23 +36,3 @@ md2docx () {
     echo "Written $output"
 }
 
-gyc () {
-    local script_path candidate
-    local script_paths=(
-        "$HOME/projects/antho-scripts/git/git_sync_repos.py"
-    )
-
-    for candidate in "${script_paths[@]}"; do
-        if [ -f "$candidate" ]; then
-            script_path=$candidate
-            break
-        fi
-    done
-
-    if [ -z "$script_path" ]; then
-        echo "git_sync_repos.py script not found."
-        return 1
-    fi
-
-    python "$script_path"
-}
