@@ -1,8 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-alias ccusage='npx ccusage@latest'
 alias ccopen='cd ~/.claude'
+alias ccu='npx ccusage@latest'
 
 ccl() {
     # plan usage limits as shown by /usage, read from the endpoint Claude Code itself queries

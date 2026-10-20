@@ -1,5 +1,5 @@
-function ccusage { npx ccusage@latest }
 function ccopen { Set-Location "$HOME\.claude" }
+function ccu { npx ccusage@latest }
 
 function ccl {
     # plan usage limits as shown by /usage, read from the endpoint Claude Code itself queries
