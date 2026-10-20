@@ -10,6 +10,10 @@ mdclean () {
     npx @lalba-anthony/md-cleaner $1
 }
 
+gcp () {
+    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 0:/var/www/alalba 0:/var/www/html -f "2:$(xdg-user-dir DESKTOP)/Projets"
+}
+
 md2docx () {
     if [ -z "$1" ]; then
         echo "Usage: md2docx <path>"

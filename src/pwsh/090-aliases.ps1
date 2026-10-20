@@ -14,6 +14,10 @@ function mdclean {
     npx @lalba-anthony/md-cleaner $file
 }
 
+function gcp {
+    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
+}
+
 function md2docx {
     param($path)
 
