@@ -428,21 +428,4 @@ EOF
     msg=$(printf '%s\n' "$raw" | sed -e 's/\r$//' -e '/^[[:space:]]*```/d' -e '/^[[:space:]]*$/d')
 
     echo "$msg"
-
-    if command -v wl-copy >/dev/null 2>&1; then
-        printf '%s' "$msg" | wl-copy
-    elif command -v xclip >/dev/null 2>&1; then
-        printf '%s' "$msg" | xclip -selection clipboard
-    elif command -v xsel >/dev/null 2>&1; then
-        printf '%s' "$msg" | xsel --clipboard --input
-    elif command -v pbcopy >/dev/null 2>&1; then
-        printf '%s' "$msg" | pbcopy
-    elif command -v clip.exe >/dev/null 2>&1; then
-        printf '%s' "$msg" | clip.exe
-    else
-        echo "No clipboard tool found (wl-copy, xclip, xsel, pbcopy, clip.exe); message printed only." >&2
-        return 0
-    fi
-
-    echo "Copied to clipboard."
 }

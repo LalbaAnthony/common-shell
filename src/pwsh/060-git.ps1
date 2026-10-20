@@ -413,6 +413,4 @@ $log
     $msg = ($msg -replace '^```\w*\s*', '' -replace '\s*```$', '').Trim()
 
     Write-Host $msg -ForegroundColor Cyan
-    Write-Host "Copied to clipboard." -ForegroundColor DarkGray
-    Set-Clipboard -Value $msg
 }
