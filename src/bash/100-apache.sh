@@ -1,17 +1,20 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
+alias a280='sudo apache2ctl -S | grep -A2 "port 80"'
 alias a2log='tail -f -n 100 /var/log/apache2/error.log'
 alias a2c='sudo apache2ctl configtest'
 alias a2s='sudo systemctl status apache2'
-alias a2r='sudo systemctl reload apache2'
 alias a2start='sudo systemctl start apache2'
 alias a2stop='sudo systemctl stop apache2'
+alias a2r='sudo systemctl reload apache2'
 alias a2rr='sudo apache2ctl configtest && sudo systemctl restart apache2'
 alias a2sa='cd /etc/apache2/sites-available'
 alias a2se='cd /etc/apache2/sites-enabled'
-alias a2dall='sudo a2dissite *.conf'
-alias a2lall='sudo apache2ctl -S | grep -A2 "port 80"'
+alias a2ca='cd /etc/apache2/conf-available'
+alias a2ce='cd /etc/apache2/conf-enabled'
+alias a2m='cd /etc/apache2/mods-available'
+alias a2me='cd /etc/apache2/mods-enabled'
 
 webperms() {
     local TARGET=$1

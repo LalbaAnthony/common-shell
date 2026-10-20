@@ -80,6 +80,14 @@ function mkcd {
     Set-Location $path
 }
 
+function listsubfiles {
+    param(
+        [string]$Folder = "."
+    )
+
+    Get-ChildItem -Path $Folder -File -Recurse
+}
+
 # Extract various archive types with a single command
 function extractt {
     param($file)

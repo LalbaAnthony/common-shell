@@ -68,6 +68,11 @@ mkcd() {
     mkdir -p "$1" && cd "$1" || return
 }
 
+listsubfiles() {
+    local folder=${1:-.}
+    find "$folder" -type f
+}
+
 # Extract various archive types with a single command
 extractt() {
     if [ -z "$1" ]; then
