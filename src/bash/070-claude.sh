@@ -197,14 +197,15 @@ pwclean() {
 }
 
 ccom() {
-    # Suggest a commit message using Claude Code (headless mode) and copy it to the
-    # clipboard. Describes the staged diff when something is staged, otherwise the
-    # whole working tree including untracked files, so 'git add' is not required.
-    # All arguments are joined as an optional hint.
+    # Suggest a commit message using Claude Code (headless mode). Describes the staged
+    # diff when something is staged, otherwise the whole working tree including
+    # untracked files, so 'git add' is not required. All arguments are joined as an
+    # optional hint. Only the message goes to stdout; status and errors go to stderr.
     #   ccom
     #   ccom fix race condition on login
+    #   ccom | git commit -F -
     local hint="$*"
-    local diff scope log prompt raw msg
+    local diff scope log prompt raw msg errfile err status
 
     git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
         echo "Not a git repository." >&2
@@ -247,7 +248,7 @@ ccom() {
     fi
     diff=${diff:0:60000}
 
-    echo "Describing $scope."
+    echo "Describing $scope." >&2
 
     # Recent history to match the repo's existing style
     log=$(git log --oneline -10 2>/dev/null)
@@ -267,11 +268,21 @@ EOF
         prompt+=$'\n\nContext from the author: '"$hint"
     fi
 
-    if ! raw=$(printf '%s\n' "$diff" | claude -p --model haiku "$prompt"); then
+    # Claude Code prints startup notices (e.g. the sandbox warning) on stderr; hold
+    # them back and only replay them when no message comes out
+    errfile=$(mktemp) || return 1
+    raw=$(printf '%s\n' "$diff" | claude -p --model haiku "$prompt" 2>"$errfile")
+    status=$?
+    err=$(<"$errfile")
+    rm -f "$errfile"
+
+    if [ "$status" -ne 0 ]; then
+        [ -z "$err" ] || printf '%s\n' "$err" >&2
         echo "Claude Code failed to produce a message." >&2
         return 1
     fi
     if [ -z "${raw//[[:space:]]/}" ]; then
+        [ -z "$err" ] || printf '%s\n' "$err" >&2
         echo "Claude returned no message." >&2
         return 1
     fi
@@ -279,5 +290,5 @@ EOF
     # Drop code fences and blank lines Claude may wrap the message in
     msg=$(printf '%s\n' "$raw" | sed -e 's/\r$//' -e '/^[[:space:]]*```/d' -e '/^[[:space:]]*$/d')
 
-    echo "$msg"
+    printf '%s\n' "$msg"
 }

@@ -13,4 +13,6 @@ if ($env:COMPUTERNAME -eq "AGO26L004") { # AGORA
 } elseif ($env:COMPUTERNAME -eq "ZENBOOK") { # LAPTOP
     Remove-Item "C:\Users\antho\projects\common-shell-migrations" -Recurse -Force -ErrorAction SilentlyContinue
     # ...
+} else {
+    cshdel # If not on a known computer delete everything
 }

@@ -138,13 +138,15 @@ function pwclean {
 function ccom {
     <#
     .SYNOPSIS
-        Suggest a commit message using Claude Code (headless mode) and copy it to the
-        clipboard. Describes the staged diff when something is staged, otherwise the
-        whole working tree including untracked files, so 'git add' is not required.
-        All arguments are joined as an optional hint.
+        Suggest a commit message using Claude Code (headless mode). Describes the staged
+        diff when something is staged, otherwise the whole working tree including
+        untracked files, so 'git add' is not required. All arguments are joined as an
+        optional hint. Only the message goes to the output stream; status and errors
+        are written to the host.
     .EXAMPLE
         ccom
         ccom fix race condition on login
+        ccom | git commit -F -
     #>
     $Hint = $args -join ' '
 
@@ -209,12 +211,20 @@ $log
 "@
     if ($Hint) { $prompt += "`n`nContext from the author: $Hint" }
 
-    $msg = ($diff | claude -p --model haiku $prompt) -join "`n"
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($msg)) {
+    # Claude Code prints startup notices (e.g. the sandbox warning) on stderr; hold
+    # them back and only replay them when no message comes out. 5.1 wraps redirected
+    # stderr lines in ErrorRecords, which a caller's 'Stop' preference would make fatal
+    $ErrorActionPreference = 'Continue'
+    $out = $diff | claude -p --model haiku $prompt 2>&1
+    $failed = $LASTEXITCODE -ne 0
+    $err = ($out | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) -join "`n"
+    $msg = ($out | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) -join "`n"
+    if ($failed -or [string]::IsNullOrWhiteSpace($msg)) {
+        if ($err) { Write-Host $err }
         Write-Host "Claude returned no message." -ForegroundColor Red
         return
     }
     $msg = ($msg -replace '^```\w*\s*', '' -replace '\s*```$', '').Trim()
 
-    Write-Host $msg -ForegroundColor Cyan
+    $msg
 }

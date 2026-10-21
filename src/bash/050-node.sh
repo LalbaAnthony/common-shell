@@ -10,6 +10,10 @@ alias nstart='npm start'
 alias nout='npm outdated'
 alias nls='npm list -g --depth=0' # Global packages
 alias nci='npm ci' # Clean install from lockfile
+alias node18="npm install -g n ; n 18"
+alias node22="npm install -g n ; n 22"
+alias node24="npm install -g n ; n 24"
+alias node25="npm install -g n ; n 25"
 alias nsetup='rm -rf node_modules && rm -rf .vite .nuxt .cache && rm -rf package-lock.json && npm i'
 
 alias yr='yarn run'
