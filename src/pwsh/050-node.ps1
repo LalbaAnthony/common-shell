@@ -12,7 +12,7 @@ function node22 { npm install -g n ; n 22 }
 function node24 { npm install -g n ; n 24 }
 function node25 { npm install -g n ; n 25 }
 function nsetup {
-    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue node_modules, .vite, .nuxt, .cache, package-lock.json
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue node_modules, .vite, .nuxt, .cache
     npm i
 }
 

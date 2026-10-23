@@ -14,7 +14,7 @@ alias node18="npm install -g n ; n 18"
 alias node22="npm install -g n ; n 22"
 alias node24="npm install -g n ; n 24"
 alias node25="npm install -g n ; n 25"
-alias nsetup='rm -rf node_modules && rm -rf .vite .nuxt .cache && rm -rf package-lock.json && npm i'
+alias nsetup='rm -rf node_modules ; rm -rf .vite .nuxt .cache ; npm i'
 
 alias yr='yarn run'
 alias yrb='yarn run build'
