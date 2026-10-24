@@ -1,7 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-alias ccopen='cd ~/.claude'
+alias cc='; claude'
+alias ccinstall='npm install -g @anthropic-ai/claude-code'
+alias ccgo='cd ~/.claude'
 alias ccu='npx ccusage@latest'
 
 cctn() {

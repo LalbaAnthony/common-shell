@@ -3,7 +3,6 @@
 
 alias gs='git status -sb'
 alias ga='git add .'
-alias gc='git commit -m'
 alias gpl='git pull'
 alias gplr='git pull --rebase'
 alias gf='git fetch'
@@ -16,6 +15,23 @@ alias gbd='git branch -d'
 alias gundo='git reset --soft HEAD~1'
 alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
+
+gps() {
+    local branch
+    branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || {
+        echo "Not on a branch (detached HEAD or not a git repository)."
+        return 1
+    }
+
+    # Upstream already set: plain push honours push.default and the configured target
+    if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+        git push
+        return
+    fi
+
+    # First push of this branch: create it on origin and track it
+    git push --set-upstream origin "$branch"
+}
 
 grecent () {
     git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15

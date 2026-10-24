@@ -1,4 +1,6 @@
-function ccopen { Set-Location "$HOME\.claude" }
+function cc { ; claude }
+function ccinstall { npm install -g @anthropic-ai/claude-code }
+function ccgo { Set-Location "$HOME\.claude" }
 function ccu { npx ccusage@latest }
 
 function cctn {

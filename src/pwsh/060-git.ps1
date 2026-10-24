@@ -1,6 +1,5 @@
 function gs { git status -sb }
 function ga { git add . }
-function gc { git commit -m @args }
 function gpl { git pull }
 function gplr { git pull --rebase }
 function gf { git fetch }
@@ -13,6 +12,27 @@ function gbd { git branch -d @args }
 function gundo { git reset --soft HEAD~1 }
 function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
 function gpf { git push --force-with-lease }
+
+# gps is a built-in ReadOnly alias for Get-Process, and aliases win over functions
+if (Test-Path Alias:gps) { Remove-Item Alias:gps -Force }
+function gps {
+    $branch = git symbolic-ref --quiet --short HEAD 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $branch) {
+        Write-Host "Not on a branch (detached HEAD or not a git repository)."
+        return
+    }
+
+    # Upstream already set: plain push honours push.default and the configured target
+    # '@{u}' must stay quoted, bare it parses as a hashtable literal
+    git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        git push
+        return
+    }
+
+    # First push of this branch: create it on origin and track it
+    git push --set-upstream origin $branch
+}
 
 function grecent {
     git for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)' |
