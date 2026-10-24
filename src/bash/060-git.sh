@@ -17,7 +17,6 @@ alias gundo='git reset --soft HEAD~1'
 alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
 
-# Local branches, most recently committed on first
 grecent () {
     git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15
 }
