@@ -18,6 +18,12 @@ function gcp {
     npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
 }
 
+function gitign {
+    param($params)
+
+    npx @lalba-anthony/git-companion ignore $params
+}
+
 function md2docx {
     param($path)
 
