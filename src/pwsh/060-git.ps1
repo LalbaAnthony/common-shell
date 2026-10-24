@@ -20,22 +20,6 @@ function grecent {
         Select-Object -First 15
 }
 
-function deltainstall {
-    if (Get-Command delta -ErrorAction SilentlyContinue) {
-        delta --version
-        return
-    }
-
-    winget install --id dandavison.delta -e --accept-source-agreements --accept-package-agreements
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to install delta."
-        return
-    }
-
-    $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
-    delta --version
-}
-
 function gclear {
     $token = -join ((1..6) | ForEach-Object { [char][int]((65..90) + (48..57) | Get-Random) })
     $confirm = Read-Host "Type '$token' to confirm"
@@ -329,4 +313,20 @@ function gprune {
         Write-Host "Skipped $($skipped.Count) unmerged branch(es), use 'git branch -D <branch>' if you are sure:"
         foreach ($branch in $skipped) { Write-Host "  $branch" }
     }
+}
+
+function deltainstall {
+    if (Get-Command delta -ErrorAction SilentlyContinue) {
+        delta --version
+        return
+    }
+
+    winget install --id dandavison.delta -e --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to install delta."
+        return
+    }
+
+    $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
+    delta --version
 }
