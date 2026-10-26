@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
-alias phpswitch='sudo update-alternatives --config php'
+alias phppick='sudo update-alternatives --config php'
 alias phplist='sudo update-alternatives --list php'
 alias php56='sudo update-alternatives --set php /usr/bin/php5.6 && sudo systemctl restart apache2'
 alias php70='sudo update-alternatives --set php /usr/bin/php7.0 && sudo systemctl restart apache2'
