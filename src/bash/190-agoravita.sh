@@ -57,6 +57,7 @@ devs() {
     names+=("ample-php7.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php74.conf && $a2restart && ${setphp}7.4")
     names+=("ample-php8.3");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php83.conf && $a2restart && ${setphp}8.3")
     names+=("ample-php8.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php84.conf && $a2restart && ${setphp}8.4")
+    names+=("ample-php8.5");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php85.conf && $a2restart && ${setphp}8.5")
     names+=("quasar");            cmds+=("$a2disall && sudo a2ensite dev-111-quasar.conf && $a2enmaildev && $a2restart && $node18")
     names+=("quasar-noback");     cmds+=("$a2disall && sudo a2ensite dev-111-quasar-noback.conf && $a2enmaildev && $a2restart && $node18")
     names+=("temporary-ouranos"); cmds+=("$a2disall && sudo a2ensite dev-111-temporary-ouranos.conf && $a2enmaildev && $a2restart && $node22")

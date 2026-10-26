@@ -11,11 +11,11 @@ mdclean () {
 }
 
 gcp () {
-    npx -p node@24 -p @lalba-anthony/git-companion git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
+    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 0:/var/www/alalba -f 0:/var/www/html
 }
 
 gitign () {
-    npx -p node@24 -p @lalba-anthony/git-companion git-companion ignore $1
+    npx @lalba-anthony/git-companion ignore $1
 }
 
 md2docx () {

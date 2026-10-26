@@ -10,4 +10,5 @@ alias php81='sudo update-alternatives --set php /usr/bin/php8.1 && sudo systemct
 alias php82='sudo update-alternatives --set php /usr/bin/php8.2 && sudo systemctl restart apache2'
 alias php83='sudo update-alternatives --set php /usr/bin/php8.3 && sudo systemctl restart apache2'
 alias php84='sudo update-alternatives --set php /usr/bin/php8.4 && sudo systemctl restart apache2'
+alias php85='sudo update-alternatives --set php /usr/bin/php8.5 && sudo systemctl restart apache2'
 alias phpsetup='rm -rf vendor ; composer install'
