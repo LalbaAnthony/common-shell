@@ -69,6 +69,55 @@ function grestore {
     }
 }
 
+function gfiles {
+    param([string]$Commit = 'HEAD')
+
+    $sha = git rev-parse --verify --quiet "$Commit^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $sha) {
+        Write-Host "Usage: gfiles [commit] (not a commit: $Commit)"
+        return
+    }
+
+    # --no-renames splits a rename into delete + add, so each path lands in exactly one list
+    # core.quotePath=false keeps non-ASCII paths readable instead of octal-escaped
+    $diffArgs = @('-c', 'core.quotePath=false', 'diff-tree', '-r', '--no-commit-id', '--no-renames', '--name-status')
+    git rev-parse --verify --quiet "$sha^1" 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        # Merge commits are diffed against their first parent: what the merge brought in
+        $diffArgs += @("$sha^1", $sha)
+    }
+    else {
+        # Root commit: no parent, everything is added
+        $diffArgs += @('--root', $sha)
+    }
+
+    $lines = git @diffArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to list files of $Commit."
+        return
+    }
+
+    $changed = @()
+    $deleted = @()
+    foreach ($line in $lines) {
+        $status, $path = $line -split "`t", 2
+        if ($status -eq 'D') {
+            $deleted += $path
+        }
+        else {
+            $changed += $path
+        }
+    }
+
+    git log -1 --format='%h %s' $sha
+
+    Write-Host "Added/updated ($($changed.Count)):"
+    foreach ($path in $changed) { Write-Host "  $path" }
+
+    Write-Host "Deleted ($($deleted.Count)):"
+    foreach ($path in $deleted) { Write-Host "  $path" }
+}
+
 function gbdel {
     param($branchName)
 

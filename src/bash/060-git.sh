@@ -69,6 +69,48 @@ grestore() {
     fi
 }
 
+gfiles() {
+    local ref=${1:-HEAD}
+    local commit
+    commit=$(git rev-parse --verify --quiet "$ref^{commit}" 2>/dev/null) || {
+        echo "Usage: gfiles [commit] (not a commit: $ref)"
+        return 1
+    }
+
+    # --no-renames splits a rename into delete + add, so each path lands in exactly one list
+    local cmd=(git diff-tree -r -z --no-commit-id --no-renames --name-status)
+    if git rev-parse --verify --quiet "$commit^1" >/dev/null 2>&1; then
+        # Merge commits are diffed against their first parent: what the merge brought in
+        cmd+=("$commit^1" "$commit")
+    else
+        # Root commit: no parent, everything is added
+        cmd+=(--root "$commit")
+    fi
+
+    local status path
+    local changed=() deleted=()
+    # -z keeps paths with spaces, quotes or non-ASCII characters intact
+    while IFS= read -r -d '' status && IFS= read -r -d '' path; do
+        if [ "$status" = "D" ]; then
+            deleted+=("$path")
+        else
+            changed+=("$path")
+        fi
+    done < <("${cmd[@]}")
+
+    git log -1 --format='%h %s' "$commit"
+
+    echo "Added/updated (${#changed[@]}):"
+    if [ ${#changed[@]} -gt 0 ]; then
+        printf '  %s\n' "${changed[@]}"
+    fi
+
+    echo "Deleted (${#deleted[@]}):"
+    if [ ${#deleted[@]} -gt 0 ]; then
+        printf '  %s\n' "${deleted[@]}"
+    fi
+}
+
 gbdel () {
     if [ -z "$1" ]; then
         echo "Usage: gbdel <branch_name>"
