@@ -69,31 +69,27 @@ function grestore {
     }
 }
 
-function gfiles {
-    param([string]$Commit = 'HEAD')
+function gsince {
+    param($Commit)
 
-    $sha = git rev-parse --verify --quiet "$Commit^{commit}" 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $sha) {
-        Write-Host "Usage: gfiles [commit] (not a commit: $Commit)"
+    if (-not $Commit) {
+        Write-Host "Usage: gsince <commit>"
         return
     }
 
-    # --no-renames splits a rename into delete + add, so each path lands in exactly one list
-    # core.quotePath=false keeps non-ASCII paths readable instead of octal-escaped
-    $diffArgs = @('-c', 'core.quotePath=false', 'diff-tree', '-r', '--no-commit-id', '--no-renames', '--name-status')
-    git rev-parse --verify --quiet "$sha^1" 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        # Merge commits are diffed against their first parent: what the merge brought in
-        $diffArgs += @("$sha^1", $sha)
-    }
-    else {
-        # Root commit: no parent, everything is added
-        $diffArgs += @('--root', $sha)
+    $sha = git rev-parse --verify --quiet "$Commit^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $sha) {
+        Write-Host "Not a commit: $Commit"
+        return
     }
 
-    $lines = git @diffArgs
+    # Net diff of the two trees: the commit itself is excluded, and a file added then
+    # deleted in between appears in neither list
+    # --no-renames splits a rename into delete + add, so each path lands in exactly one list
+    # core.quotePath=false keeps non-ASCII paths readable instead of octal-escaped
+    $lines = git -c core.quotePath=false diff-tree -r --no-renames --name-status $sha HEAD
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to list files of $Commit."
+        Write-Host "Failed to diff $Commit against HEAD."
         return
     }
 
@@ -109,7 +105,9 @@ function gfiles {
         }
     }
 
-    git log -1 --format='%h %s' $sha
+    $subject = git log -1 --format='%h %s' $sha
+    $count = git rev-list --count "$sha..HEAD"
+    Write-Host "From $subject to HEAD, $count commit(s)"
 
     Write-Host "Added/updated ($($changed.Count)):"
     foreach ($path in $changed) { Write-Host "  $path" }

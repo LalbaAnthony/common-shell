@@ -69,26 +69,23 @@ grestore() {
     fi
 }
 
-gfiles() {
-    local ref=${1:-HEAD}
+gsince() {
+    if [ -z "$1" ]; then
+        echo "Usage: gsince <commit>"
+        return 1
+    fi
+
     local commit
-    commit=$(git rev-parse --verify --quiet "$ref^{commit}" 2>/dev/null) || {
-        echo "Usage: gfiles [commit] (not a commit: $ref)"
+    commit=$(git rev-parse --verify --quiet "$1^{commit}" 2>/dev/null) || {
+        echo "Not a commit: $1"
         return 1
     }
 
-    # --no-renames splits a rename into delete + add, so each path lands in exactly one list
-    local cmd=(git diff-tree -r -z --no-commit-id --no-renames --name-status)
-    if git rev-parse --verify --quiet "$commit^1" >/dev/null 2>&1; then
-        # Merge commits are diffed against their first parent: what the merge brought in
-        cmd+=("$commit^1" "$commit")
-    else
-        # Root commit: no parent, everything is added
-        cmd+=(--root "$commit")
-    fi
-
     local status path
     local changed=() deleted=()
+    # Net diff of the two trees: the commit itself is excluded, and a file added then
+    # deleted in between appears in neither list
+    # --no-renames splits a rename into delete + add, so each path lands in exactly one list
     # -z keeps paths with spaces, quotes or non-ASCII characters intact
     while IFS= read -r -d '' status && IFS= read -r -d '' path; do
         if [ "$status" = "D" ]; then
@@ -96,9 +93,9 @@ gfiles() {
         else
             changed+=("$path")
         fi
-    done < <("${cmd[@]}")
+    done < <(git diff-tree -r -z --no-renames --name-status "$commit" HEAD)
 
-    git log -1 --format='%h %s' "$commit"
+    echo "From $(git log -1 --format='%h %s' "$commit") to HEAD, $(git rev-list --count "$commit..HEAD") commit(s)"
 
     echo "Added/updated (${#changed[@]}):"
     if [ ${#changed[@]} -gt 0 ]; then
