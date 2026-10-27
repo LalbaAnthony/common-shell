@@ -1,6 +1,16 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
+#  -------- Ample --------
+
+crij() {
+    local dir
+    for dir in /var/www/alalba/crij-{auch,aveyron,herault,occitanie,po,tarn,tarn-et-garonne}; do
+        echo "=== $(basename "$dir") ==="
+        (cd "$dir" && "$@") || echo "ERREUR dans $dir"
+    done
+}
+
 #  -------- Kronos --------
 
 kwc() {
