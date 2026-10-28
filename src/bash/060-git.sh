@@ -197,6 +197,14 @@ gacp() {
     git add . && git commit -m "$message" && git push
 }
 
+cgacp() {
+    # ccom reports its own errors on stderr and outputs nothing on failure
+    local message
+    message=$(ccom "$@") || return 1
+
+    gacp "$message"
+}
+
 groot() {
     local root
     root=$(git rev-parse --show-toplevel 2>/dev/null) || {
