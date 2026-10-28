@@ -34,6 +34,48 @@ function gps {
     git push --set-upstream origin $branch
 }
 
+function gmep {
+    param($targetBranch)
+
+    if (-not $targetBranch) {
+        Write-Host "Usage: gmep <branch_name>"
+        return
+    }
+
+    $initialBranch = git symbolic-ref --quiet --short HEAD 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $initialBranch) {
+        Write-Host "Not on a branch (detached HEAD or not a git repository)."
+        return
+    }
+
+    # Every step stops on failure: a conflict must not be pushed or carried across a checkout
+    git fetch
+    if ($LASTEXITCODE -ne 0) { return }
+
+    # Pull the target branch changes into the initial branch (updated CHANGELOG, ...)
+    git pull --rebase
+    if ($LASTEXITCODE -ne 0) { return }
+    git pull origin $targetBranch
+    if ($LASTEXITCODE -ne 0) { return }
+    git push
+    if ($LASTEXITCODE -ne 0) { return }
+
+    # Go to the target branch to integrate changes from the initial branch
+    git checkout $targetBranch
+    if ($LASTEXITCODE -ne 0) { return }
+
+    # Update the target branch with the latest changes from the remote and the initial branch
+    git pull --rebase
+    if ($LASTEXITCODE -ne 0) { return }
+    git pull origin $initialBranch
+    if ($LASTEXITCODE -ne 0) { return }
+    git push
+    if ($LASTEXITCODE -ne 0) { return }
+
+    # Return to the initial branch after integrating changes
+    git checkout $initialBranch
+}
+
 function grecent {
     git for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)' |
         Select-Object -First 15

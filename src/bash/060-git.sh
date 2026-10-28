@@ -33,6 +33,39 @@ gps() {
     git push --set-upstream origin "$branch"
 }
 
+gmep () {
+    local target_branch=$1
+    local initial_branch
+
+    if [ -z "$target_branch" ]; then
+        echo "Usage: gmep <branch_name>"
+        return 1
+    fi
+
+    initial_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || {
+        echo "Not on a branch (detached HEAD or not a git repository)."
+        return 1
+    }
+
+    git fetch
+
+    # Pull the target branch changes into the initial branch (updated CHANGELOG, ...)
+    git pull --rebase
+    git pull origin "$target_branch"
+    git push
+
+    # Go to the target branch to integrate changes from the initial branch
+    git checkout "$target_branch"
+
+    # Update the target branch with the latest changes from the remote and the initial branch
+    git pull --rebase
+    git pull origin "$initial_branch"
+    git push
+
+    # Return to the initial branch after integrating changes
+    git checkout "$initial_branch"
+}
+
 grecent () {
     git for-each-ref --sort=-committerdate refs/heads/ --format="%(committerdate:short) %(refname:short)" | head -n 15
 }
