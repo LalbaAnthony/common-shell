@@ -172,10 +172,7 @@ gclone() {
 }
 
 gacp() {
-    if [ -z "$1" ]; then
-        echo "Usage: gacp <commit_message>"
-        return 1
-    fi
+    local message=$1
 
     local root
     root=$(git rev-parse --show-toplevel 2>/dev/null) || {
@@ -187,7 +184,17 @@ gacp() {
         return 1
     fi
 
-    git add . && git commit -m "$1" && git push
+    if [[ -z "${message//[[:space:]]/}" ]]; then
+        read -r -p "Commit message: " message
+    fi
+
+    # Whitespace-only counts as empty: git would reject it, but only after `git add .` ran
+    if [[ -z "${message//[[:space:]]/}" ]]; then
+        echo "Commit message required. Aborting."
+        return 1
+    fi
+
+    git add . && git commit -m "$message" && git push
 }
 
 groot() {

@@ -197,11 +197,6 @@ function gclone {
 function gacp {
     param($message)
 
-    if (-not $message) {
-        Write-Host "Usage: gacp <commit_message>"
-        return
-    }
-
     $root = git rev-parse --show-toplevel 2>$null
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Not a git repository."
@@ -209,6 +204,16 @@ function gacp {
     }
     if ((Get-Location).Path -ne (Resolve-Path $root).Path) {
         Write-Host "Not at repo root ($root). Aborting."
+        return
+    }
+
+    if ([string]::IsNullOrWhiteSpace($message)) {
+        $message = Read-Host "Commit message"
+    }
+
+    # Whitespace-only counts as empty: git would reject it, but only after `git add .` ran
+    if ([string]::IsNullOrWhiteSpace($message)) {
+        Write-Host "Commit message required. Aborting."
         return
     }
 
