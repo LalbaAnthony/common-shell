@@ -197,7 +197,7 @@ gacp() {
     git add . && git commit -m "$message" && git push
 }
 
-cgacp() {
+gacpc() {
     # ccom reports its own errors on stderr and outputs nothing on failure
     local message
     message=$(ccom "$@") || return 1

@@ -224,7 +224,7 @@ function gacp {
     git push
 }
 
-function cgacp {
+function gacpc {
     # ccom reports its own errors on the host and outputs nothing on failure
     $message = ccom @args
     if ([string]::IsNullOrWhiteSpace($message)) { return }
