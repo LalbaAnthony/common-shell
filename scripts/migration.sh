@@ -4,7 +4,7 @@ if [ "$HOSTNAME" = "SRV-DEV-ROSE-04" ]; then # AGORA
     # rm -rf ~/.ssh
     # rm -rf ~/.claude
     # rm -rf /var/www/html
-    # cshdel
+    # bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)
     :
 elif [ "$HOSTNAME" = "vps-33aa7a06" ]; then # BRZ
     :

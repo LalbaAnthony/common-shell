@@ -3,7 +3,7 @@ if ($env:COMPUTERNAME -eq "AGO26L004") { # AGORA
     # Remove-Item "C:\Users\a.lalba\.claude" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\projects" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\Desktop\Projets" -Recurse -Force -ErrorAction SilentlyContinue
-    # cshdel
+    # bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)
 
     & C:\Users\a.lalba\projects\antho-scripts\anthropic\agora-claude-to-dev.ps1 # Copy local Claude config to remote dev machine
 
