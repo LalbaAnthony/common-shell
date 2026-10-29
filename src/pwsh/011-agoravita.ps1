@@ -1,99 +1,42 @@
-# shellcheck shell=bash
-# shellcheck disable=SC1091,SC2034,SC2142,SC2154
-
 #  -------- Ample --------
 
-crij() {
-    local dir
-    for dir in /var/www/alalba/crij-{auch,aveyron,herault,occitanie,po,tarn,tarn-et-garonne}; do
-        echo "=== $(basename "$dir") ==="
-        (cd "$dir" && "$@") || echo "ERREUR dans $dir"
-    done
-}
+# Run a command in every CRIJ site: `crij git status -sb`, or `crij { git pull; composer install }`
+function crij {
+    if ($args.Count -eq 0) {
+        Write-Host "Usage: crij <command> [args...]"
+        return
+    }
 
-#  -------- Kronos --------
+    # Not `$command, $commandArgs = $args`: a one-word command would splat a positional $null
+    $command = $args[0]
+    $commandArgs = @($args | Select-Object -Skip 1)
+    $root = Join-Path $HOME 'Desktop\Projets\Ample\CRIJ'
 
-kwc() {
-    if [ -d "back" ]; then
-        cd back || return
-    fi
+    foreach ($site in 'auch', 'aveyron', 'herault', 'occitanie', 'po', 'tarn', 'tarn-et-garonne') {
+        $dir = Join-Path $root "crij-$site"
+        Write-Host "=== crij-$site ==="
 
-    php artisan kronos:wordpress:configure
-}
+        $ok = $false
+        if (Test-Path -LiteralPath $dir -PathType Container) {
+            Push-Location -LiteralPath $dir
+            try {
+                # Cmdlets and functions never set LASTEXITCODE, so a stale value would read as a failure
+                $global:LASTEXITCODE = 0
+                & $command @commandArgs
+                $ok = $? -and $LASTEXITCODE -eq 0
+            }
+            catch {
+                # Unknown command, or a terminating error thrown by the command itself
+                Write-Host $_.Exception.Message
+            }
+            finally {
+                Pop-Location
+            }
+        }
+        else {
+            Write-Host "No such directory: $dir"
+        }
 
-kdev() {
-    if [ ! -d "front" ] && [ ! -d "back" ]; then
-        echo "No front/ or back/ directory here"
-        return 1
-    fi
-
-    npx concurrently -n front -c cyan \
-        "cd front && yarn dev"
-}
-
-#  -------- Atlas --------
-
-atld() {
-    if [ ! -d "front" ] && [ ! -d "back" ]; then
-        echo "No front/ or back/ directory here"
-        return 1
-    fi
-
-    npx concurrently -n front,back,back-worker -c cyan,magenta,magenta \
-        "cd front && yarn dev" \
-        "cd back && npm run dev" \
-        "cd back && php artisan queue:work"
-}
-
-#  -------- Common --------
-
-devs() {
-    # reusable pieces
-    local node22="npm install -g n && n 22"
-    local node18="npm install -g n && n 18"
-    local setphp="sudo update-alternatives --set php /usr/bin/php"
-    local a2enmaildev="sudo a2ensite dev-000-maildev.conf"
-    local a2disall="(sudo a2dissite '*.conf' || echo 'No site to disable')"
-    local a2restart="sudo apache2ctl configtest && sudo systemctl restart apache2"
-
-    # preset table: one line per preset, same position in both arrays
-    local names=() cmds=()
-    names+=("extranet");          cmds+=("$a2disall && sudo a2ensite dev-111-extranet.conf && $a2restart && $node22")
-    names+=("nuxt-wp-php7.4");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php74.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("nuxt-wp-php8.3");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php83.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("atlas");             cmds+=("$a2disall && sudo a2ensite dev-111-atlas.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("ample-php5.6");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php56.conf && $a2enmaildev && $a2restart && ${setphp}5.6")
-    names+=("ample-php7.0");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php70.conf && $a2enmaildev && $a2restart && ${setphp}7.0")
-    names+=("ample-php7.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php74.conf && $a2enmaildev && $a2restart && ${setphp}7.4")
-    names+=("ample-php8.3");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php83.conf && $a2enmaildev && $a2restart && ${setphp}8.3")
-    names+=("ample-php8.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php84.conf && $a2enmaildev && $a2restart && ${setphp}8.4")
-    names+=("ample-php8.5");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php85.conf && $a2enmaildev && $a2restart && ${setphp}8.5")
-    names+=("quasar");            cmds+=("$a2disall && sudo a2ensite dev-111-quasar.conf && $a2enmaildev && $a2restart && $node18")
-    names+=("quasar-noback");     cmds+=("$a2disall && sudo a2ensite dev-111-quasar-noback.conf && $a2enmaildev && $a2restart && $node18")
-    names+=("temporary-ouranos"); cmds+=("$a2disall && sudo a2ensite dev-111-temporary-ouranos.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("wordpress");         cmds+=("$a2disall && sudo a2ensite dev-111-wordpress.conf && $a2enmaildev && $a2restart")
-
-    # selection
-    local count=${#names[@]} idx="" REPLY PS3 _
-    if [[ $# -gt 0 ]]; then
-        idx=$1
-        if ! [[ $idx =~ ^[0-9]+$ ]] || (( idx < 1 || idx > count )); then
-            echo "invalid index: $1 (expected 1-$count)" >&2
-            return 1
-        fi
-    else
-        PS3="choice (1-$count): "
-        select _ in "${names[@]}"; do
-            if [[ ${REPLY:-} =~ ^[0-9]+$ ]] && (( REPLY >= 1 && REPLY <= count )); then
-                idx=$REPLY
-                break
-            fi
-            echo "invalid choice" >&2
-        done
-    fi
-    [[ -n $idx ]] || return 1
-
-    # run
-    printf '\n[%s]\n%s\n\n' "${names[idx-1]}" "${cmds[idx-1]}"
-    eval "${cmds[idx-1]}"
+        if (-not $ok) { Write-Host "ERREUR dans $dir" }
+    }
 }
