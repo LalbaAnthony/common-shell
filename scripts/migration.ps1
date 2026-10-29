@@ -16,5 +16,5 @@ if ($env:COMPUTERNAME -eq "AGO26L004") { # AGORA
     Remove-Item "C:\Users\antho\projects\common-shell-migrations" -Recurse -Force -ErrorAction SilentlyContinue
     # ...
 } else {
-    cshdel # If not on a known computer delete everything
+    # ...
 }

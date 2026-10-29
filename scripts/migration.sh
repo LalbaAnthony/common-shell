@@ -15,5 +15,5 @@ elif [ "$HOSTNAME" = "raspberrypi" ]; then # RASPBERRYPI
 elif [ "$HOSTNAME" = "debian" ]; then # DEBIAN LAPTOP
     :
 else
-    cshdel # If not on a known computer delete everything
+    :
 fi
