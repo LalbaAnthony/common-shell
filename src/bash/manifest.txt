@@ -16,22 +16,22 @@
 
 # -------- 0NN: shared with PowerShell --------
 000-core.sh
-010-self.sh
-020-random.sh
-030-network.sh
-040-python.sh
-050-node.sh
-060-git.sh
-070-claude.sh
-080-docker.sh
-090-aliases.sh
-095-env.sh
+001-self.sh
+002-random.sh
+003-network.sh
+004-python.sh
+005-node.sh
+006-git.sh
+007-claude.sh
+008-docker.sh
+009-aliases.sh
+010-env.sh
+011-agoravita.sh
 
 # -------- 1NN: Bash only --------
-100-apache.sh
-110-sql.sh
-120-certbot.sh
-130-php.sh
-140-laravel.sh
-150-wordpress.sh
-190-agoravita.sh
+101-apache.sh
+102-sql.sh
+103-certbot.sh
+104-php.sh
+105-laravel.sh
+109-wordpress.sh
