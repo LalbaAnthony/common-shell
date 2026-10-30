@@ -18,6 +18,10 @@ gitign () {
     npx @lalba-anthony/git-companion ignore $1
 }
 
+fzc () {
+    python -m filezilla_companion
+}
+
 md2docx () {
     if [ -z "$1" ]; then
         echo "Usage: md2docx <path>"

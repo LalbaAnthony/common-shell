@@ -24,6 +24,10 @@ function gitign {
     npx @lalba-anthony/git-companion ignore $params
 }
 
+function fzc {
+    python -m filezilla_companion
+}
+
 function md2docx {
     param($path)
 
@@ -42,20 +46,5 @@ function md2docx {
         -ContentType "text/markdown; charset=utf-8" -Body $body -OutFile $output -UseBasicParsing
 
     Write-Host "Written $output"
-}
-
-function fzc {
-    $candidates = @(
-        (Join-Path $env:USERPROFILE 'projects\filezilla-companion\src\main.py')
-    )
-
-    $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-
-    if (-not $found) {
-        Write-Host "FileZilla Companion script not found."
-        return
-    }
-
-    Start-Process powershell -ArgumentList "python `"$found`"" # Open in a new PowerShell window
 }
 
