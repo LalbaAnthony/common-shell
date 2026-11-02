@@ -1,4 +1,5 @@
 if ($env:COMPUTERNAME -eq "AGO26L004") { # AGORA
+    # Remove-Item "C:\Users\a.lalba\AppData\Local\Temp" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\.ssh" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\.claude" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\projects" -Recurse -Force -ErrorAction SilentlyContinue
