@@ -14,6 +14,15 @@ dps() {
     docker ps --format "table {{.ID}}\t{{.Names}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}"
 }
 
+dbug() {
+    if [ -z "$1" ]; then
+        echo "Usage: dbug <container_name_or_id>"
+        return 1
+    fi
+
+    docker debug "$1"
+}
+
 dexec() {
     if [ -z "$1" ]; then
         echo "Usage: dexec <container_name_or_id>"

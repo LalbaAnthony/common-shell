@@ -11,6 +11,16 @@ function dps {
     docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}'
 }
 
+function dbug {
+    param($container)
+    if (-not $container) {
+        Write-Host "Usage: dbug <container_name_or_id>"
+        return
+    }
+
+    docker debug $container
+}
+
 function dexec {
     param($container)
     if (-not $container) {
