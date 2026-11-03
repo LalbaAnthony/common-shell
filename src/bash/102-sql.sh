@@ -18,7 +18,6 @@ __mysql_require_cnf() {
     fi
 }
 
-
 sqlimport() {
     local FILE=$1
     local DB=$2

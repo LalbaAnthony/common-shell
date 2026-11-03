@@ -47,6 +47,41 @@ atld() {
 
 #  -------- Common --------
 
+makesomespace() {
+    # ====== Clearing temporary files ======
+    
+    echo "Clearing temporary files..."
+    rm -rf /tmp/*
+    echo "Temporary files cleared."
+
+    # ====== Clearing cache ======
+    
+    echo "Clearing cache..."
+    rm -rf ~/.cache/*
+    echo "Cache cleared."
+
+    # ====== Removing old Node.js versions ======
+
+    echo "Removing old Node.js versions..."
+
+    local CURRENT VERSION
+
+    CURRENT=$(node -v | sed 's/^v//')
+
+    while read -r VERSION; do
+        VERSION="${VERSION#node/}"
+
+        if [ "$VERSION" != "$CURRENT" ]; then
+            echo "Removing Node.js $VERSION"
+            sudo n rm "$VERSION"
+        else
+            echo "Keeping Node.js $VERSION (current)"
+        fi
+    done < <(n ls)
+
+    echo "Old Node.js versions removed."
+}
+
 devs() {
     # reusable pieces
     local node22="npm install -g n && n 22"
