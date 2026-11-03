@@ -84,8 +84,8 @@ makesomespace() {
 
 devs() {
     # reusable pieces
-    local node22="npm install -g n && n 22"
     local node18="npm install -g n && n 18"
+    local node22="npm install -g n && n 22"
     local setphp="sudo update-alternatives --set php /usr/bin/php"
     local a2enmaildev="sudo a2ensite dev-000-maildev.conf"
     local a2disall="(sudo a2dissite '*.conf' || echo 'No site to disable')"
