@@ -49,8 +49,8 @@ atld() {
 
 devs() {
     # reusable pieces
-    local node22="npm install -g n && n 22"
     local node18="npm install -g n && n 18"
+    local node22="npm install -g n && n 22"
     local setphp="sudo update-alternatives --set php /usr/bin/php"
     local a2enmaildev="sudo a2ensite dev-000-maildev.conf"
     local a2disall="(sudo a2dissite '*.conf' || echo 'No site to disable')"
@@ -60,8 +60,8 @@ devs() {
     local names=() cmds=()
     names+=("nuxt-wp-php7.4");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php74.conf && $a2enmaildev && $a2restart && $node22")
     names+=("nuxt-wp-php8.3");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php83.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("atlas-php8.4");      cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php8.4.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("atlas-php8.5");      cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php8.5.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("atlas-php8.4");      cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php84.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("atlas-php8.5");      cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php85.conf && $a2enmaildev && $a2restart && $node22")
     names+=("ample-php5.6");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php56.conf && $a2enmaildev && $a2restart && ${setphp}5.6")
     names+=("ample-php7.0");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php70.conf && $a2enmaildev && $a2restart && ${setphp}7.0")
     names+=("ample-php7.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php74.conf && $a2enmaildev && $a2restart && ${setphp}7.4")
