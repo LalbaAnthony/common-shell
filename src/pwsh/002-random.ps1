@@ -64,6 +64,29 @@ function watchspace { # Monitor disk space every 5 seconds
 function topcpu { Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 Name, Id, CPU, WS } # Top 10 CPU consumers
 function topmem { Get-Process | Sort-Object WS -Descending | Select-Object -First 10 Name, Id, CPU, WS } # Top 10 RAM consumers
 
+# Clear the temp and cache folders. Files in use stay behind and are reported.
+function makesomespace {
+    foreach ($folder in @($env:TEMP, (Join-Path $HOME '.cache'))) {
+        if (-not $folder -or -not (Test-Path -LiteralPath $folder -PathType Container)) {
+            Write-Host "Skipping '$folder': folder not found."
+            continue
+        }
+
+        Write-Host "Clearing $folder..."
+        Get-ChildItem -LiteralPath $folder -Force | ForEach-Object {
+            Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
+
+        $left = @(Get-ChildItem -LiteralPath $folder -Force).Count
+        if ($left -gt 0) {
+            Write-Host "$folder cleared, $left top-level item(s) could not be removed (probably in use)."
+        }
+        else {
+            Write-Host "$folder cleared."
+        }
+    }
+}
+
 # Open the current directory in the file explorer
 function expl { Invoke-Item . }
 
