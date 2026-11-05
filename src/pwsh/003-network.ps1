@@ -15,6 +15,17 @@ function dnscheck {
     }
 }
 
+# Flush the local DNS resolver cache
+function dnsflush {
+    try {
+        Clear-DnsClientCache -ErrorAction Stop
+        Write-Host "Flushed DNS client cache"
+    }
+    catch {
+        Write-Host "Failed to flush DNS client cache: $($_.Exception.Message)"
+    }
+}
+
 # Kill whatever holds a port, reporting each process by name
 function killport {
     param($port)
