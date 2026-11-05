@@ -69,6 +69,17 @@ derase() {
 }
 
 dnuke() {
+    # -f / --force skips the confirmation token
+    local force=0 token confirm
+    case "$1" in
+        '') ;;
+        -f|--force) force=1 ;;
+        *)
+            echo "Usage: dnuke [-f|--force]"
+            return 1
+            ;;
+    esac
+
     echo "WARNING: This will destroy ALL Docker containers, images, volumes, networks, and build cache."
     echo "Current state:"
     echo "  Containers: $(docker ps -aq 2>/dev/null | wc -l)"
@@ -76,13 +87,14 @@ dnuke() {
     echo "  Volumes:    $(docker volume ls -q 2>/dev/null | wc -l)"
     echo ""
 
-    local token confirm
-    token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
-    read -rp "Type '$token' to confirm: " confirm
+    if [ "$force" -eq 0 ]; then
+        token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
+        read -rp "Type '$token' to confirm: " confirm
 
-    if [ "$confirm" != "$token" ]; then
-        echo "Aborted."
-        return 1
+        if [ "$confirm" != "$token" ]; then
+            echo "Aborted."
+            return 1
+        fi
     fi
 
     # shellcheck disable=SC2046 # word splitting is wanted: one arg per container/volume ID

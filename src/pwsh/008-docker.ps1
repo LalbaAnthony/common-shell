@@ -70,6 +70,9 @@ function derase {
 }
 
 function dnuke {
+    # -Force skips the confirmation token
+    param([switch]$Force)
+
     Write-Host "WARNING: This will destroy ALL Docker containers, images, volumes, networks, and build cache."
     Write-Host "Current state:"
     Write-Host "  Containers: $(@(docker ps -aq 2>$null).Count)"
@@ -77,12 +80,14 @@ function dnuke {
     Write-Host "  Volumes:    $(@(docker volume ls -q 2>$null).Count)"
     Write-Host ""
 
-    $token = -join ((1..6) | ForEach-Object { [char][int]((65..90) + (48..57) | Get-Random) })
-    $confirm = Read-Host "Type '$token' to confirm"
+    if (-not $Force) {
+        $token = -join ((1..6) | ForEach-Object { [char][int]((65..90) + (48..57) | Get-Random) })
+        $confirm = Read-Host "Type '$token' to confirm"
 
-    if ($confirm -cne $token) {
-        Write-Host "Aborted."
-        return
+        if ($confirm -cne $token) {
+            Write-Host "Aborted."
+            return
+        }
     }
 
     docker rm -f $(docker ps -aq) 2>$null
