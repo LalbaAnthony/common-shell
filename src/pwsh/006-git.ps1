@@ -82,17 +82,8 @@ function grecent {
 }
 
 function gclear {
-    $token = -join ((1..6) | ForEach-Object { [char][int]((65..90) + (48..57) | Get-Random) })
-    $confirm = Read-Host "Type '$token' to confirm"
-
-    if ($confirm -cne $token) {
-        Write-Host "Aborted."
-        return
-    }
     git reset --hard
     git clean -fd
-
-    Write-Host "Repository cleared."
 }
 
 function grestore {

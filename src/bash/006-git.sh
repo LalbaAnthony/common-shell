@@ -71,19 +71,8 @@ grecent () {
 }
 
 gclear () {
-    local token confirm
-    token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
-    read -rp "Type '$token' to confirm: " confirm
-
-    if [ "$confirm" != "$token" ]; then
-        echo "Aborted."
-        return 1
-    fi
-
     git reset --hard
     git clean -fd
-
-    echo "Repository cleared."
 }
 
 grestore() {
