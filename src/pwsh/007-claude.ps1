@@ -104,6 +104,7 @@ Write one commit message for the diff provided on stdin, which covers the $scope
 Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
 Match the style of the recent history below when it is consistent.
 Output only the message, no quotes, no code fences, no explanation.
+Never use double quotes anywhere in the message; quote names or values with single quotes instead.
 
 Recent history:
 $log
@@ -123,7 +124,8 @@ $log
         Write-Host "Claude returned no message." -ForegroundColor Red
         return
     }
-    $msg = ($msg -replace '^```\w*\s*', '' -replace '\s*```$', '').Trim()
+    # Double quotes become single quotes whatever the prompt obtained
+    $msg = ($msg -replace '^```\w*\s*', '' -replace '\s*```$', '').Trim().Replace('"', "'")
 
     $msg
 }

@@ -122,6 +122,7 @@ Write one commit message for the diff provided on stdin, which covers the $scope
 Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
 Match the style of the recent history below when it is consistent.
 Output only the message, no quotes, no code fences, no explanation.
+Never use double quotes anywhere in the message; quote names or values with single quotes instead.
 
 Recent history:
 $log
@@ -151,8 +152,9 @@ EOF
         return 1
     fi
 
-    # Drop code fences and blank lines Claude may wrap the message in
-    msg=$(printf '%s\n' "$raw" | sed -e 's/\r$//' -e '/^[[:space:]]*```/d' -e '/^[[:space:]]*$/d')
+    # Drop code fences and blank lines Claude may wrap the message in; double quotes
+    # become single quotes whatever the prompt obtained
+    msg=$(printf '%s\n' "$raw" | sed -e 's/\r$//' -e '/^[[:space:]]*```/d' -e '/^[[:space:]]*$/d' -e "s/\"/'/g")
 
     printf '%s\n' "$msg"
 }
