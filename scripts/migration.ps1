@@ -4,6 +4,7 @@ if ($env:COMPUTERNAME -eq "AGO26L004") { # AGORA
     # Remove-Item "C:\Users\a.lalba\.claude" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\projects" -Recurse -Force -ErrorAction SilentlyContinue
     # Remove-Item "C:\Users\a.lalba\Desktop\Projets" -Recurse -Force -ErrorAction SilentlyContinue
+    # Remove-Item "C:\Users\a.lalba\Pictures\Screenshots" -Recurse -Force -ErrorAction SilentlyContinue
     # bash <(curl -fsSL https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.sh)
     # docker rm -f $(docker ps -aq) 2>$null
     # docker volume rm $(docker volume ls -q) 2>$null
