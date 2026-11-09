@@ -31,6 +31,32 @@ kdev() {
         "cd front && yarn dev"
 }
 
+kfbuild() {
+    if [ ! -d "front" ]; then
+        echo "No front/ directory here"
+        return 1
+    fi
+
+    local env_prod=".env.prod"
+    local env_backup=".env.old"
+    local env=".env"
+
+    echo "Back up .env and copy .env.prod to .env"
+    mv "$env" "$env_backup"
+    cp "$env_prod" "$env"
+
+    echo "Building front..."
+    cd front
+    yarn build
+    echo "Front build complete."
+
+    echo "Cleaning up .env"
+    rm "$env"
+    mv "$env_backup" "$env"
+
+    cd ..
+}
+
 #  -------- Atlas --------
 
 atld() {
@@ -58,20 +84,21 @@ devs() {
 
     # preset table: one line per preset, same position in both arrays
     local names=() cmds=()
-    names+=("nuxt-wp-php7.4");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php74.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("nuxt-wp-php8.3");    cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php83.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("atlas-php8.4");      cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php84.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("atlas-php8.5");      cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php85.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("ample-php5.6");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php56.conf && $a2enmaildev && $a2restart && ${setphp}5.6")
-    names+=("ample-php7.0");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php70.conf && $a2enmaildev && $a2restart && ${setphp}7.0")
-    names+=("ample-php7.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php74.conf && $a2enmaildev && $a2restart && ${setphp}7.4")
-    names+=("ample-php8.3");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php83.conf && $a2enmaildev && $a2restart && ${setphp}8.3")
-    names+=("ample-php8.4");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php84.conf && $a2enmaildev && $a2restart && ${setphp}8.4")
-    names+=("ample-php8.5");      cmds+=("$a2disall && sudo a2ensite dev-111-ample-php85.conf && $a2enmaildev && $a2restart && ${setphp}8.5")
-    names+=("quasar");            cmds+=("$a2disall && sudo a2ensite dev-111-quasar.conf && $a2enmaildev && $a2restart && $node18")
-    names+=("quasar-noback");     cmds+=("$a2disall && sudo a2ensite dev-111-quasar-noback.conf && $a2enmaildev && $a2restart && $node18")
-    names+=("temporary-ouranos"); cmds+=("$a2disall && sudo a2ensite dev-111-temporary-ouranos.conf && $a2enmaildev && $a2restart && $node22")
-    names+=("wordpress");         cmds+=("$a2disall && sudo a2ensite dev-111-wordpress.conf && $a2enmaildev && $a2restart")
+    names+=("nuxt-wp-php7.4");           cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php74.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("nuxt-wp-php8.3");           cmds+=("$a2disall && sudo a2ensite dev-111-nuxt-wp-php83.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("atlas-php8.4");             cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php84.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("atlas-php8.5");             cmds+=("$a2disall && sudo a2ensite dev-111-atlas-php85.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("ample-php5.6");             cmds+=("$a2disall && sudo a2ensite dev-111-ample-php56.conf && $a2enmaildev && $a2restart && ${setphp}5.6")
+    names+=("ample-php7.0");             cmds+=("$a2disall && sudo a2ensite dev-111-ample-php70.conf && $a2enmaildev && $a2restart && ${setphp}7.0")
+    names+=("ample-php7.4");             cmds+=("$a2disall && sudo a2ensite dev-111-ample-php74.conf && $a2enmaildev && $a2restart && ${setphp}7.4")
+    names+=("ample-php8.3");             cmds+=("$a2disall && sudo a2ensite dev-111-ample-php83.conf && $a2enmaildev && $a2restart && ${setphp}8.3")
+    names+=("ample-php8.4");             cmds+=("$a2disall && sudo a2ensite dev-111-ample-php84.conf && $a2enmaildev && $a2restart && ${setphp}8.4")
+    names+=("ample-php8.5");             cmds+=("$a2disall && sudo a2ensite dev-111-ample-php85.conf && $a2enmaildev && $a2restart && ${setphp}8.5")
+    names+=("quasar");                   cmds+=("$a2disall && sudo a2ensite dev-111-quasar.conf && $a2enmaildev && $a2restart && $node18")
+    names+=("quasar-noback");            cmds+=("$a2disall && sudo a2ensite dev-111-quasar-noback.conf && $a2enmaildev && $a2restart && $node18")
+    names+=("temporary-ouranos");        cmds+=("$a2disall && sudo a2ensite dev-111-temporary-ouranos.conf && $a2enmaildev && $a2restart && $node22")
+    names+=("wordpress-php8.3");         cmds+=("$a2disall && sudo a2ensite dev-111-wordpress-php83.conf && $a2enmaildev && $a2restart")
+    names+=("wordpress-php8.5");         cmds+=("$a2disall && sudo a2ensite dev-111-wordpress-php85.conf && $a2enmaildev && $a2restart")
 
     # selection
     local count=${#names[@]} idx="" REPLY PS3 _
