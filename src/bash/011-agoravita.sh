@@ -46,15 +46,20 @@ kfbuild() {
     cp "$env_prod" "$env"
 
     echo "Building front..."
-    cd front
-    yarn build
-    echo "Front build complete."
+    local rc=0
+    # Subshell: the caller's cwd never changes, and the .env restore below runs whatever the build outcome
+    ( cd front && yarn build ) || rc=$?
+    if (( rc == 0 )); then
+        echo "Front build complete."
+    else
+        echo "Front build failed (exit $rc)." >&2
+    fi
 
     echo "Cleaning up .env"
     rm "$env"
     mv "$env_backup" "$env"
 
-    cd ..
+    return "$rc"
 }
 
 #  -------- Atlas --------
