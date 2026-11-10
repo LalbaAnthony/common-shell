@@ -28,7 +28,7 @@ For non-main branches, use prefixes to clarify the purpose:
 
 ### Hooks
 
-The repository ships a `pre-commit` and a `pre-push` hook in `.githooks/` that run every check of the Lint workflow before the code leaves your machine. Enable them once per clone:
+The repository ships a `pre-commit` and a `pre-push` hook in `.githooks/` that run every job of the Checks workflow (`.github/workflows/checks.yml`) before the code leaves your machine. Enable them once per clone:
 
 ```sh
 git config core.hooksPath .githooks
@@ -39,7 +39,7 @@ git config core.hooksPath .githooks
 | `pre-commit` | The staged snapshot — exactly what the commit will record.             |
 | `pre-push`   | The tip of every branch being pushed (tags and deletions are skipped). |
 
-Both run the five CI checks in parallel (manifests, `bash -n`, ShellCheck, PSScriptAnalyzer, Windows PowerShell 5.1 parse) through `.github/scripts/check-all.sh`. Unstaged edits and untracked files are ignored: stage a fix for it to count. A tree that already passed is not checked again, nor is one whose parent passed when the commit touches nothing the checks read, so a push right after a checked commit, or a docs-only commit, costs nothing.
+Both run the five CI jobs in parallel, under the same names (`manifests`, `bash-syntax`, `bash-lint`, `pwsh-syntax`, `pwsh-lint`), through `.github/scripts/check-all.sh`. Unstaged edits and untracked files are ignored: stage a fix for it to count. A tree that already passed is not checked again, nor is one whose parent passed when the commit touches nothing the checks read, so a push right after a checked commit, or a docs-only commit, costs nothing.
 
 Requirements: a running Docker daemon (ShellCheck) and PowerShell — `pwsh`, or `powershell.exe` on Windows. A missing one fails the hook. Off Windows the 5.1 parse check is skipped with a notice; the `windows-latest` CI job still runs it.
 

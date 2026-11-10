@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Runs every job of .github/workflows/lint.yml locally, in parallel, and
+# Runs every job of .github/workflows/checks.yml locally, in parallel, and
 # reports them all. This is what the Git hooks in .githooks/ run.
 #
 # Usage:
@@ -12,14 +12,14 @@
 #                                              and check the tip of every branch
 #                                              being pushed.
 #
-# Checks, one per CI job (a bulleted list: a comment line starting with the
-# word "shellcheck" would be read as a ShellCheck directive):
-#   - manifests    check-manifests.sh
-#   - bash-syntax  check-syntax-bash.sh
-#   - shellcheck   lint-bash.sh           needs a running Docker daemon
-#   - pssa         lint-pwsh.ps1          needs pwsh, or powershell.exe on Windows
-#   - pwsh-syntax  check-syntax-pwsh.ps1  needs powershell.exe; skipped off
-#                                         Windows, where 5.1 cannot exist
+# Checks, each named after the CI job it mirrors:
+#   manifests    check-manifests.sh
+#   bash-syntax  check-syntax-bash.sh
+#   bash-lint    lint-bash.sh           ShellCheck; needs a running Docker daemon
+#   pwsh-syntax  check-syntax-pwsh.ps1  needs powershell.exe; skipped off
+#                                       Windows, where 5.1 cannot exist
+#   pwsh-lint    lint-pwsh.ps1          PSScriptAnalyzer; needs pwsh, or
+#                                       powershell.exe on Windows
 # A missing Docker daemon or PowerShell is a failure, not a skip.
 #
 # Snapshots: every mode but the first exports the tree to a scratch directory
@@ -36,16 +36,17 @@
 #
 # The lint scripts' overrides (SHELLCHECK_BIN, SHELLCHECK_VERSION,
 # SHELLCHECK_SEVERITY, PSSA_VERSION) are cleared, so their pinned defaults -
-# the versions lint.yml pins - always apply. Call a lint script directly to
+# the versions checks.yml pins - always apply. Call a lint script directly to
 # use an override.
 
 set -euo pipefail
 
 # Everything the checks read: a change confined to other paths cannot change
-# any outcome. Keep in step with the push `paths` filter of lint.yml.
+# any outcome. Keep in step with the push `paths` filter of checks.yml.
 RELEVANT_PATHS=(.gitattributes .githooks .github scripts src PSScriptAnalyzerSettings.psd1)
 
-CHECKS=(manifests bash-syntax shellcheck pssa pwsh-syntax)
+# Report order: the order of the jobs in checks.yml.
+CHECKS=(manifests bash-syntax bash-lint pwsh-syntax pwsh-lint)
 
 # Exit code by which a check reports "not applicable here" rather than a pass.
 SKIP=77
@@ -117,7 +118,7 @@ check_bash_syntax() {
     "$BASH" .github/scripts/check-syntax-bash.sh
 }
 
-check_shellcheck() {
+check_bash_lint() {
     require_script .github/scripts/lint-bash.sh
     if ! command -v docker >/dev/null 2>&1; then
         echo "docker not found: ShellCheck runs in the pinned koalaman/shellcheck image."
@@ -131,7 +132,7 @@ check_shellcheck() {
     "$BASH" .github/scripts/lint-bash.sh
 }
 
-check_pssa() {
+check_pwsh_lint() {
     require_script .github/scripts/lint-pwsh.ps1
     if [ -z "$pssa_exe" ]; then
         echo "No PowerShell found: install PowerShell 7 (pwsh) to run PSScriptAnalyzer."
@@ -157,9 +158,9 @@ run_check() {
     case "$1" in
         manifests) check_manifests ;;
         bash-syntax) check_bash_syntax ;;
-        shellcheck) check_shellcheck ;;
-        pssa) check_pssa ;;
+        bash-lint) check_bash_lint ;;
         pwsh-syntax) check_pwsh_syntax ;;
+        pwsh-lint) check_pwsh_lint ;;
         *)
             echo "Unknown check: $1"
             exit 1
