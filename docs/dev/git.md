@@ -28,7 +28,7 @@ For non-main branches, use prefixes to clarify the purpose:
 
 ### Hooks
 
-The repository ships a `pre-commit` and a `pre-push` hook in `.githooks/` that run every job of the Checks workflow (`.github/workflows/checks.yml`) before the code leaves your machine. Enable them once per clone:
+The repository ships a `pre-commit` and a `pre-push` hook in `.githooks/` that run every job of the Checks workflow (`.github/workflows/checks.inc.yml`, called by `checks.flow.yml`) before the code leaves your machine. Enable them once per clone:
 
 ```sh
 git config core.hooksPath .githooks

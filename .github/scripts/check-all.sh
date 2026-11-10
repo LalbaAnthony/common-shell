@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Runs every job of .github/workflows/checks.yml locally, in parallel, and
+# Runs every job of .github/workflows/checks.inc.yml locally, in parallel, and
 # reports them all. This is what the Git hooks in .githooks/ run.
 #
 # Usage:
@@ -36,16 +36,16 @@
 #
 # The lint scripts' overrides (SHELLCHECK_BIN, SHELLCHECK_VERSION,
 # SHELLCHECK_SEVERITY, PSSA_VERSION) are cleared, so their pinned defaults -
-# the versions checks.yml pins - always apply. Call a lint script directly to
+# the versions checks.inc.yml pins - always apply. Call a lint script directly to
 # use an override.
 
 set -euo pipefail
 
 # Everything the checks read: a change confined to other paths cannot change
-# any outcome. Keep in step with the push `paths` filter of checks.yml.
+# any outcome. Keep in step with the push `paths` filter of checks.flow.yml.
 RELEVANT_PATHS=(.gitattributes .githooks .github scripts src PSScriptAnalyzerSettings.psd1)
 
-# Report order: the order of the jobs in checks.yml.
+# Report order: the order of the jobs in checks.inc.yml.
 CHECKS=(manifests bash-syntax bash-lint pwsh-syntax pwsh-lint)
 
 # Exit code by which a check reports "not applicable here" rather than a pass.

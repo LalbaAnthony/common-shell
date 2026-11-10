@@ -1,28 +1,20 @@
-name: Checks
+name: Checks (reusable)
 
+# Reusable workflow: runs only when a *.flow.yml calls it, never on its own.
+#
 # Every job is a single call into .github/scripts/. check-all.sh runs the same
 # scripts locally, under the same check names, from the pre-commit and
 # pre-push hooks in .githooks/.
+#
+# The version pins live here, not in the caller: a caller's workflow-level
+# `env` does not reach a called workflow. No `concurrency` here either: the
+# caller owns it, and the same group in both deadlocks the run.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.gitattributes'
-      - '.githooks/**'
-      - '.github/**'
-      - 'scripts/**'
-      - 'src/**'
-      - 'PSScriptAnalyzerSettings.psd1'
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
-
-concurrency:
-  group: checks-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   SHELLCHECK_VERSION: v0.11.0

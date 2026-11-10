@@ -1,0 +1,32 @@
+name: Checks
+
+# Runs checks.inc.yml for main only: pushes to main, pull requests into main,
+# and manual runs dispatched from main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.gitattributes'
+      - '.githooks/**'
+      - '.github/**'
+      - 'scripts/**'
+      - 'src/**'
+      - 'PSScriptAnalyzerSettings.psd1'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    # workflow_dispatch has no branch filter: a run dispatched from any other
+    # ref is skipped here.
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/checks.inc.yml
