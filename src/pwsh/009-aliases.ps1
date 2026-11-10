@@ -1,10 +1,6 @@
 function hxy {
     param($location)
 
-    if (-not $location) {
-        $location = "Toulouse"
-    }
-
     npx @lalba-anthony/hexasky $location
 }
 
@@ -12,16 +8,6 @@ function mdclean {
     param($file)
 
     npx @lalba-anthony/md-cleaner $file
-}
-
-function gsc {
-    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
-}
-
-function gitign {
-    param($params)
-
-    npx @lalba-anthony/git-companion ignore $params
 }
 
 function fzc {

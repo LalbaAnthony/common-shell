@@ -44,11 +44,11 @@ docs/dev/git.md                    # Branching and commit conventions
 
 Current parts, by band (see "Part numbering" under Conventions):
 
-| Band | `src/bash/` | `src/pwsh/` |
-| --- | --- | --- |
-| `0NN` shared | `000-core` `001-self` `002-random` `003-network` `004-python` `005-node` `006-git` `007-claude` `008-docker` `009-aliases` `010-env` `011-agoravita` | same twelve numbers and names |
-| `1NN` Bash only | `101-apache` `102-sql` `103-certbot` `104-php` `105-laravel` `109-wordpress` | — |
-| `2NN` PowerShell only | — | `202-vscode` `203-sleep` `204-shortcuts` |
+| Band                  | `src/bash/`                                                                                                                                          | `src/pwsh/`                   |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `0NN` shared          | `000-core` `001-self` `002-random` `003-network` `004-python` `005-node` `006-git` `007-claude` `008-docker` `009-aliases` `010-env` `011-agoravita` | same twelve numbers and names |
+| `1NN` Bash only       | `101-apache` `102-sql` `103-certbot` `104-php` `105-laravel` `109-wordpress`                                                                         | —                             |
+| `2NN` PowerShell only | —                                                                                                                                                    | `202-vscode` `203-sleep`      |
 
 `000-core.sh` holds the PS1 theme, history settings and the file-wide ShellCheck prose; `000-core.ps1` holds the PATH merge, the `prompt` function and a `pwsh` function. There are no entry points in the executable sense: `src/` holds what ships, `scripts/` holds what installs it.
 
@@ -141,13 +141,13 @@ Uninstall reverses steps 3 to 5: it first removes the login entry (`systemctl --
 
 Self-management commands, defined in `src/bash/001-self.sh` / `src/pwsh/001-self.ps1`, all fetching from `main`:
 
-| Command | Does |
-| --- | --- |
-| `cshupd` | Re-runs the installer — update is just re-install |
-| `cshdel` | Runs the uninstaller |
-| `cshmgr` | Runs `scripts/migration.*` |
-| `cshall` | `cshmgr ; cshupd` — what the login job runs |
-| `cshopen` | `cd` home and list the profile files |
+| Command   | Does                                              |
+| --------- | ------------------------------------------------- |
+| `cshupd`  | Re-runs the installer — update is just re-install |
+| `cshdel`  | Runs the uninstaller                              |
+| `cshmgr`  | Runs `scripts/migration.*`                        |
+| `cshall`  | `cshmgr ; cshupd` — what the login job runs       |
+| `cshopen` | `cd` home and list the profile files              |
 
 `scripts/migration.sh` / `scripts/migration.ps1` branch on `$HOSTNAME` / `$env:COMPUTERNAME`: each known host gets its own block of one-off actions, and any other host is a no-op (the `cshdel` fallback for unknown hosts was removed in `f066036`). The `AGO26L004` block in `migration.ps1` calls a script outside this repo by absolute path (`C:\Users\a.lalba\projects\antho-scripts\…`). Because `cshall` runs at every login and on every manual call, every action placed there runs repeatedly and unattended — it must be idempotent and non-interactive.
 
@@ -169,11 +169,11 @@ Local checks: `.githooks/pre-commit` and `.githooks/pre-push` only `exec` `.gith
 
 The three-digit prefix on every `src/<shell>/` part encodes **which shells the section covers**. The leading digit is the band; the remaining two order parts within it.
 
-| Band | Meaning | Lives in |
-| --- | --- | --- |
+| Band  | Meaning                           | Lives in                      |
+| ----- | --------------------------------- | ----------------------------- |
 | `0NN` | Section exists in **both** shells | `src/bash/` *and* `src/pwsh/` |
-| `1NN` | **Bash only** | `src/bash/` |
-| `2NN` | **PowerShell only** | `src/pwsh/` |
+| `1NN` | **Bash only**                     | `src/bash/`                   |
+| `2NN` | **PowerShell only**               | `src/pwsh/`                   |
 
 **The pairing rule.** A `0NN` number names the same section in both shells: `002-random.sh` and `002-random.ps1` are the same section, and the shared band is contiguous (`000`–`011` in both directories), so listing both directories side by side makes a missing counterpart obvious. That is the point of the scheme: after adding something to one shell, the numbers tell you whether the other shell owes you a counterpart.
 

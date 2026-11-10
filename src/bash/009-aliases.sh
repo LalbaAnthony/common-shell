@@ -2,20 +2,11 @@
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
 hxy () {
-    local location=${1:-Toulouse}
-    npx @lalba-anthony/hexasky "$location"
+    npx @lalba-anthony/hexasky "$1"
 }
 
 mdclean () {
     npx @lalba-anthony/md-cleaner $1
-}
-
-gsc () {
-    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 0:/var/www/alalba -f 0:/var/www/html
-}
-
-gitign () {
-    npx @lalba-anthony/git-companion ignore $1
 }
 
 fzc () {

@@ -31,4 +31,3 @@
 # -------- 2NN: PowerShell only --------
 202-vscode.ps1
 203-sleep.ps1
-204-shortcuts.ps1

@@ -13,6 +13,16 @@ function gundo { git reset --soft HEAD~1 }
 function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
 function gpf { git push --force-with-lease }
 
+function gsc {
+    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
+}
+
+function gitign {
+    param($params)
+
+    npx @lalba-anthony/git-companion ignore $params
+}
+
 # gps is a built-in ReadOnly alias for Get-Process, and aliases win over functions
 if (Test-Path Alias:gps) { Remove-Item Alias:gps -Force }
 function gps {
@@ -270,20 +280,6 @@ function gck {
     git checkout -b $branchName
 }
 
-function gbranch {
-    $branches = git branch | ForEach-Object { $_.TrimStart('* ').Trim() }
-    $i = 1
-    foreach ($b in $branches) { Write-Host "$i) $b"; $i++ }
-    $choice = Read-Host "Select branch"
-    $branch = $branches[$choice - 1]
-    if ($branch) {
-        git checkout $branch
-    }
-    else {
-        Write-Host "Invalid choice"
-    }
-}
-
 function gopen {
     param([string]$Remote = 'origin')
 
@@ -308,33 +304,6 @@ function gopen {
 
     Write-Host $webUrl
     Start-Process $webUrl
-}
-
-function ghSetDefaultBranch {
-    param(
-        [Parameter(Mandatory, Position = 0)][string]$Branch,
-        [string]$Remote = 'origin'
-    )
-
-    $url = git remote get-url $Remote 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $url) {
-        Write-Host "No remote '$Remote' found."
-        return
-    }
-
-    # Extract OWNER/REPO from https, ssh or scp-style remote URLs
-    if ($url -notmatch '[:/](?<repo>[^/:]+/[^/]+?)(?:\.git)?/?$') {
-        Write-Host "Cannot resolve OWNER/REPO from: $url"
-        return
-    }
-
-    gh api -X PATCH "repos/$($Matches.repo)" -f "default_branch=$Branch" --silent
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to set default branch to '$Branch'."
-        return
-    }
-
-    git remote set-head $Remote --auto | Out-Null
 }
 
 function gprune {
@@ -389,20 +358,4 @@ function gprune {
         Write-Host "Skipped $($skipped.Count) unmerged branch(es), use 'git branch -D <branch>' if you are sure:"
         foreach ($branch in $skipped) { Write-Host "  $branch" }
     }
-}
-
-function deltainstall {
-    if (Get-Command delta -ErrorAction SilentlyContinue) {
-        delta --version
-        return
-    }
-
-    winget install --id dandavison.delta -e --accept-source-agreements --accept-package-agreements
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to install delta."
-        return
-    }
-
-    $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
-    delta --version
 }
