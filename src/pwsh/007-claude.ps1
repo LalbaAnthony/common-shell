@@ -40,8 +40,11 @@ function ccom {
         Suggest a commit message using Claude Code (headless mode). Describes the staged
         diff when something is staged, otherwise the whole working tree including
         untracked files, so 'git add' is not required. All arguments are joined as an
-        optional hint. Only the message goes to the output stream; status and errors
-        are written to the host.
+        optional hint.
+        Built for pipelines: on success, the output stream carries the one-line message
+        and nothing else is written anywhere. On failure, nothing is output, stderr gets
+        exactly one 'ccom: <reason>' line and $LASTEXITCODE is 1. git warnings and
+        Claude Code notices are discarded, never replayed.
     .EXAMPLE
         ccom
         ccom fix race condition on login
@@ -49,61 +52,86 @@ function ccom {
     #>
     $Hint = $args -join ' '
 
+    # 5.1 wraps redirected native stderr in ErrorRecords, which a caller's 'Stop'
+    # preference would make fatal. Function scope only
+    $ErrorActionPreference = 'Continue'
+
     [Console]::OutputEncoding = [Text.Encoding]::UTF8
     $OutputEncoding = [Text.Encoding]::UTF8
 
+    # Straight to stderr: Write-Host lands on stdout when PowerShell runs as a child
+    # process, and Write-Error adds a multi-line record around the reason
+    $fail = {
+        param([string]$Reason)
+        [Console]::Error.WriteLine("ccom: $Reason")
+        $global:LASTEXITCODE = 1
+    }
+
     git rev-parse --is-inside-work-tree 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Not a git repository." -ForegroundColor Red
+        & $fail 'not a git repository.'
         return
     }
 
     if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
-        Write-Host "Claude Code CLI not found in PATH." -ForegroundColor Red
+        & $fail 'Claude Code CLI not found in PATH.'
         return
     }
 
     # Lockfiles and minified assets carry no intent worth describing
     $exclude = @('--', '.', ':(exclude)*lock*', ':(exclude)*.min.*')
 
+    # Every git call discards stderr (on Windows, git diff warns about line endings
+    # there) and is judged by its exit code instead.
     # What is staged is what will be committed, so it wins when it exists
-    $diff = (git diff --cached @exclude) -join "`n"
+    $diff = (git diff --cached @exclude 2>$null) -join "`n"
+    if ($LASTEXITCODE -ne 0) {
+        & $fail 'git diff failed.'
+        return
+    }
     $scope = 'staged changes'
 
     if ([string]::IsNullOrWhiteSpace($diff)) {
         $scope = 'working tree (nothing staged)'
+        $diff = ''
 
         # On an unborn HEAD there is no commit to diff against yet
         git rev-parse --verify HEAD 2>$null | Out-Null
         if ($LASTEXITCODE -eq 0) {
-            $diff = (git diff HEAD @exclude) -join "`n"
-        }
-        else {
-            $diff = ''
+            $diff = (git diff HEAD @exclude 2>$null) -join "`n"
+            if ($LASTEXITCODE -ne 0) {
+                & $fail 'git diff failed.'
+                return
+            }
         }
 
-        # git diff never reports untracked files; synthesise one diff per file
-        foreach ($file in (git ls-files --others --exclude-standard @exclude)) {
+        $untracked = git ls-files --others --exclude-standard @exclude 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            & $fail 'git ls-files failed.'
+            return
+        }
+
+        # git diff never reports untracked files; synthesise one diff per file.
+        # --no-index exits 1 whenever the two sides differ, i.e. always here
+        foreach ($file in $untracked) {
             $diff += "`n" + ((git diff --no-index -- /dev/null $file 2>$null) -join "`n")
         }
     }
 
     if ([string]::IsNullOrWhiteSpace($diff)) {
-        Write-Host "Nothing to describe: no changes in the working tree." -ForegroundColor Red
+        & $fail 'nothing to describe, the working tree is clean.'
         return
     }
     if ($diff.Length -gt 60000) { $diff = $diff.Substring(0, 60000) }
 
-    Write-Host "Describing $scope." -ForegroundColor DarkGray
-
-    # Recent history to match the repo's existing style
+    # Recent history to match the repo's existing style; empty on an unborn HEAD
     $log = (git log --oneline -10 2>$null) -join "`n"
 
     $prompt = @"
 Write one commit message for the diff provided on stdin, which covers the $scope.
 Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
 Match the style of the recent history below when it is consistent.
-Output only the message, no quotes, no code fences, no explanation.
+Output only the message, on a single line, no quotes, no code fences, no explanation.
 Never use double quotes anywhere in the message; quote names or values with single quotes instead.
 
 Recent history:
@@ -111,21 +139,26 @@ $log
 "@
     if ($Hint) { $prompt += "`n`nContext from the author: $Hint" }
 
-    # Claude Code prints startup notices (e.g. the sandbox warning) on stderr; hold
-    # them back and only replay them when no message comes out. 5.1 wraps redirected
-    # stderr lines in ErrorRecords, which a caller's 'Stop' preference would make fatal
-    $ErrorActionPreference = 'Continue'
-    $out = $diff | claude -p --model haiku $prompt 2>&1
-    $failed = $LASTEXITCODE -ne 0
-    $err = ($out | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) -join "`n"
-    $msg = ($out | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) -join "`n"
-    if ($failed -or [string]::IsNullOrWhiteSpace($msg)) {
-        if ($err) { Write-Host $err }
-        Write-Host "Claude returned no message." -ForegroundColor Red
+    # Claude Code prints startup notices (e.g. the sandbox warning) on stderr: discard them
+    $out = $diff | claude -p --model haiku $prompt 2>$null
+    $claudeExit = $LASTEXITCODE
+    if ($claudeExit -ne 0) {
+        & $fail "Claude Code failed (exit $claudeExit)."
         return
     }
-    # Double quotes become single quotes whatever the prompt obtained
-    $msg = ($msg -replace '^```\w*\s*', '' -replace '\s*```$', '').Trim().Replace('"', "'")
+
+    # Keep the first line shaped like a Conventional Commits subject: drops code
+    # fences, blank lines and any preamble Claude adds despite the prompt. Double
+    # quotes become single quotes whatever the prompt obtained
+    $msg = $out |
+        ForEach-Object { "$_".Trim().Replace('"', "'") } |
+        Where-Object { $_ -cmatch '^[a-z]+(\([^()]+\))?!?: \S' } |
+        Select-Object -First 1
+
+    if (-not $msg) {
+        & $fail 'Claude Code returned no valid commit message.'
+        return
+    }
 
     $msg
 }

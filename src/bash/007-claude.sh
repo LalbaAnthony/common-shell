@@ -64,64 +64,78 @@ ccom() {
     # Suggest a commit message using Claude Code (headless mode). Describes the staged
     # diff when something is staged, otherwise the whole working tree including
     # untracked files, so 'git add' is not required. All arguments are joined as an
-    # optional hint. Only the message goes to stdout; status and errors go to stderr.
+    # optional hint.
+    # Built for pipelines: on success, stdout carries the one-line message and nothing
+    # else is written anywhere. On failure, stdout stays empty, stderr gets exactly one
+    # 'ccom: <reason>' line and the status is 1. git warnings and Claude Code notices
+    # are discarded, never replayed.
     #   ccom
     #   ccom fix race condition on login
     #   ccom | git commit -F -
     local hint="$*"
-    local diff scope log prompt raw msg errfile err status
+    local diff scope untracked file log prompt raw msg status
 
-    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
-        echo "Not a git repository." >&2
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "ccom: not a git repository." >&2
         return 1
-    }
+    fi
 
-    command -v claude >/dev/null 2>&1 || {
-        echo "Claude Code CLI not found in PATH." >&2
+    if ! command -v claude >/dev/null 2>&1; then
+        echo "ccom: Claude Code CLI not found in PATH." >&2
         return 1
-    }
+    fi
 
     # Lockfiles and minified assets carry no intent worth describing
     local exclude=(-- . ':(exclude)*lock*' ':(exclude)*.min.*')
 
+    # Every git call discards stderr (on Windows, git diff warns about line endings
+    # there) and is judged by its exit status instead.
     # What is staged is what will be committed, so it wins when it exists
-    diff=$(git diff --cached "${exclude[@]}")
+    if ! diff=$(git diff --cached "${exclude[@]}" 2>/dev/null); then
+        echo "ccom: git diff failed." >&2
+        return 1
+    fi
     scope="staged changes"
 
     if [ -z "${diff//[[:space:]]/}" ]; then
         scope="working tree (nothing staged)"
+        diff=""
 
         # On an unborn HEAD there is no commit to diff against yet
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
-            diff=$(git diff HEAD "${exclude[@]}")
-        else
-            diff=""
+            if ! diff=$(git diff HEAD "${exclude[@]}" 2>/dev/null); then
+                echo "ccom: git diff failed." >&2
+                return 1
+            fi
         fi
 
-        # git diff never reports untracked files; synthesise one diff per file
-        local file
+        if ! untracked=$(git ls-files --others --exclude-standard "${exclude[@]}" 2>/dev/null); then
+            echo "ccom: git ls-files failed." >&2
+            return 1
+        fi
+
+        # git diff never reports untracked files; synthesise one diff per file.
+        # --no-index exits 1 whenever the two sides differ, i.e. always here
         while IFS= read -r file; do
             [ -n "$file" ] || continue
             diff+=$'\n'$(git diff --no-index -- /dev/null "$file" 2>/dev/null)
-        done < <(git ls-files --others --exclude-standard "${exclude[@]}")
+        done <<<"$untracked"
     fi
 
     if [ -z "${diff//[[:space:]]/}" ]; then
-        echo "Nothing to describe: no changes in the working tree." >&2
+        echo "ccom: nothing to describe, the working tree is clean." >&2
         return 1
     fi
     diff=${diff:0:60000}
 
-    echo "Describing $scope." >&2
-
-    # Recent history to match the repo's existing style
+    # Recent history to match the repo's existing style; empty on an unborn HEAD
     log=$(git log --oneline -10 2>/dev/null)
 
     prompt=$(cat <<EOF
 Write one commit message for the diff provided on stdin, which covers the $scope.
 Format: Conventional Commits, type(scope): subject, imperative mood, max 72 chars, English.
 Match the style of the recent history below when it is consistent.
-Output only the message, no quotes, no code fences, no explanation.
+Output only the message, on a single line, no quotes, no code fences, no explanation.
 Never use double quotes anywhere in the message; quote names or values with single quotes instead.
 
 Recent history:
@@ -133,28 +147,27 @@ EOF
         prompt+=$'\n\nContext from the author: '"$hint"
     fi
 
-    # Claude Code prints startup notices (e.g. the sandbox warning) on stderr; hold
-    # them back and only replay them when no message comes out
-    errfile=$(mktemp) || return 1
-    raw=$(printf '%s\n' "$diff" | claude -p --model haiku "$prompt" 2>"$errfile")
+    # Claude Code prints startup notices (e.g. the sandbox warning) on stderr. The
+    # group discards them, and a broken-pipe error from printf too
+    raw=$({ printf '%s\n' "$diff" | claude -p --model haiku "$prompt"; } 2>/dev/null)
     status=$?
-    err=$(<"$errfile")
-    rm -f "$errfile"
-
     if [ "$status" -ne 0 ]; then
-        [ -z "$err" ] || printf '%s\n' "$err" >&2
-        echo "Claude Code failed to produce a message." >&2
-        return 1
-    fi
-    if [ -z "${raw//[[:space:]]/}" ]; then
-        [ -z "$err" ] || printf '%s\n' "$err" >&2
-        echo "Claude returned no message." >&2
+        echo "ccom: Claude Code failed (exit $status)." >&2
         return 1
     fi
 
-    # Drop code fences and blank lines Claude may wrap the message in; double quotes
-    # become single quotes whatever the prompt obtained
-    msg=$(printf '%s\n' "$raw" | sed -e 's/\r$//' -e '/^[[:space:]]*```/d' -e '/^[[:space:]]*$/d' -e "s/\"/'/g")
+    # Keep the first line shaped like a Conventional Commits subject: drops code
+    # fences, blank lines and any preamble Claude adds despite the prompt. Double
+    # quotes become single quotes whatever the prompt obtained
+    msg=$(printf '%s\n' "$raw" |
+        tr -d '\r' |
+        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e "s/\"/'/g" |
+        grep -E -m 1 '^[a-z]+(\([^()]+\))?!?: [^[:space:]]')
+
+    if [ -z "$msg" ]; then
+        echo "ccom: Claude Code returned no valid commit message." >&2
+        return 1
+    fi
 
     printf '%s\n' "$msg"
 }
