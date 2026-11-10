@@ -70,8 +70,19 @@ function derase {
 }
 
 function dnuke {
-    # -Force skips the confirmation token
+    # -f / -Force / --force skips the confirmation token
     param([switch]$Force)
+
+    # --force is not a PowerShell parameter token: a simple function routes it to $args, unbound
+    foreach ($arg in $args) {
+        if ($arg -eq '--force') {
+            $Force = $true
+        }
+        else {
+            Write-Host "Usage: dnuke [-f|-Force|--force]"
+            return
+        }
+    }
 
     Write-Host "WARNING: This will destroy ALL Docker containers, images, volumes, networks, and build cache."
     Write-Host "Current state:"
