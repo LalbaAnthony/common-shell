@@ -10,7 +10,7 @@ mdclean () {
     npx @lalba-anthony/md-cleaner $1
 }
 
-gcp () {
+gsc () {
     npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 0:/var/www/alalba -f 0:/var/www/html
 }
 
