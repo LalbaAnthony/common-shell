@@ -1,9 +1,14 @@
 name: Lint
 
+# Every job is a single call into .github/scripts/. check-all.sh runs the same
+# scripts locally, from the pre-commit and pre-push hooks in .githooks/.
+
 on:
   push:
     branches: [main]
     paths:
+      - '.gitattributes'
+      - '.githooks/**'
       - '.github/**'
       - 'scripts/**'
       - 'src/**'
@@ -30,12 +35,29 @@ jobs:
       - uses: actions/checkout@v4
       - run: bash .github/scripts/check-manifests.sh
 
+  bash-syntax:
+    name: Syntax (bash -n)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/check-syntax-bash.sh
+
   bash:
     name: ShellCheck (bash)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: bash .github/scripts/lint-bash.sh
+
+  pwsh-syntax:
+    name: Syntax (Windows PowerShell 5.1)
+    # The only runner with Windows PowerShell: the profile must load under 5.1,
+    # whose parser rejects syntax PowerShell 7 accepts.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: powershell
+        run: ./.github/scripts/check-syntax-pwsh.ps1
 
   pwsh:
     name: PSScriptAnalyzer (powershell)

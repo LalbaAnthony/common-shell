@@ -3,3 +3,5 @@
 *.sh text eol=lf
 # Read line-by-line by both installers; keep it LF everywhere.
 manifest.txt text eol=lf
+# Git hooks have no extension and run under bash, Git for Windows included.
+.githooks/* text eol=lf

@@ -5,7 +5,8 @@
 # Usage:
 #   .github/scripts/lint-bash.sh [file ...]
 #
-# With no arguments, every tracked *.sh file in the repository is linted.
+# With no arguments, every tracked *.sh file in the repository and every Git
+# hook under .githooks/ is linted.
 #
 # Environment:
 #   SHELLCHECK_VERSION   Docker image tag to pin (default: v0.11.0).
@@ -31,7 +32,7 @@ else
     # that are still in the index but already deleted from the working tree.
     while IFS= read -r file; do
         [ -f "$file" ] && targets+=("$file")
-    done < <(git ls-files --cached --others --exclude-standard '*.sh')
+    done < <(git ls-files --cached --others --exclude-standard '*.sh' '.githooks/*')
 fi
 
 if [ "${#targets[@]}" -eq 0 ]; then

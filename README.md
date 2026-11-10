@@ -70,3 +70,13 @@ Part files are numbered `000-`, `010-`, … stepping by 10, so a directory listi
 Adding a section takes two edits: create the part file **and** list it in that directory's `manifest.txt`. The manifest sets the concatenation order, and an unlisted part is silently dropped from every install — CI fails the build if the two ever disagree.
 
 Do not edit the installed `*_extra` file directly; the next `cshupd` overwrites it.
+
+## 🛠️ Contributing
+
+Enable the Git hooks once per clone, so every CI check runs before each commit and push:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+They need a running Docker daemon and PowerShell (`pwsh`, or `powershell.exe` on Windows). Details, bypass and manual runs: [docs/dev/git.md](docs/dev/git.md#hooks).

@@ -11,7 +11,7 @@ In the repository each profile is **split into one part file per section**; the 
 - **Bash** — Bash, not POSIX `sh` (uses `shopt`, `[[`, arrays, process substitution). No Bash-4-only syntax is present (no associative arrays, `mapfile`/`readarray`, case-modifying expansions), so no minimum version is asserted. `src/bash/*.sh` are sourced, not executed, and carry no shebang; `scripts/*.sh` declare `#!/bin/bash`.
 - **PowerShell** — `src/pwsh/*.ps1` and `scripts/*.ps1` target Windows PowerShell 5.1 and PowerShell 7. Every part, and the assembled profile, parses under 5.1.
 - **No package manager, no manifest, no build system.** No `package.json`, `composer.json`, `Makefile`, or equivalent exists.
-- **CI**: GitHub Actions. ShellCheck pinned to `v0.11.0` (Docker image `koalaman/shellcheck`), PSScriptAnalyzer pinned to `1.25.0`.
+- **CI**: GitHub Actions. ShellCheck pinned to `v0.11.0` (Docker image `koalaman/shellcheck`), PSScriptAnalyzer pinned to `1.25.0`, Windows PowerShell 5.1 parse checks on `windows-latest`. The same checks run locally from Git hooks (`.githooks/`).
 
 ## Structure
 
@@ -29,7 +29,12 @@ scripts/migration.ps1
 .github/scripts/lint-bash.sh       # ShellCheck runner — all lint logic lives here, not in the workflow
 .github/scripts/lint-pwsh.ps1      # PSScriptAnalyzer runner
 .github/scripts/check-manifests.sh # Fails if a manifest and its directory disagree
+.github/scripts/check-syntax-bash.sh   # bash -n over every *.sh and .githooks/*
+.github/scripts/check-syntax-pwsh.ps1  # Windows PowerShell 5.1 parse: each *.ps1, then the assembled profile
+.github/scripts/check-all.sh       # Every CI job locally, in parallel, on a snapshot — what the hooks run
 .github/workflows/lint.yml         # Thin: triggers, version pins, module cache
+.githooks/pre-commit               # Thin: exec check-all.sh --staged
+.githooks/pre-push                 # Thin: exec check-all.sh --pre-push
 PSScriptAnalyzerSettings.psd1      # PSSA rule config
 .gitattributes                     # Enforces line endings — see Gotchas
 docs/dev/git.md                    # Branching and commit conventions
@@ -48,6 +53,20 @@ Current parts, by band (see "Part numbering" under Conventions):
 `000-core.sh` holds the PS1 theme, history settings and the file-wide ShellCheck prose; `000-core.ps1` holds the PATH merge, the `prompt` function and a `pwsh` function. There are no entry points in the executable sense: `src/` holds what ships, `scripts/` holds what installs it.
 
 ## Commands
+
+Enable the Git hooks, once per clone (nothing enforces it; without it no hook runs):
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Run every CI job locally, in parallel (Git Bash on Windows — from PowerShell, a bare `bash` may resolve to WSL's `System32\bash.exe`):
+
+```bash
+bash .github/scripts/check-all.sh                # working tree, as is
+bash .github/scripts/check-all.sh --staged       # the index: what the pre-commit hook checks
+bash .github/scripts/check-all.sh --commit HEAD  # a commit's tree
+```
 
 Lint everything (both discover their own targets via git):
 
@@ -81,32 +100,14 @@ Check that both manifests still match their directories (no Docker or modules ne
 bash .github/scripts/check-manifests.sh
 ```
 
-Syntax checks that need neither Docker nor PSScriptAnalyzer. The PowerShell one must run under `powershell.exe` (5.1), since PSSA does not catch 5.1 parse errors:
+Syntax checks that need neither Docker nor PSScriptAnalyzer. The PowerShell one parses every `*.ps1`, then the profile assembled the way `install.ps1` assembles it, and must run under `powershell.exe` (5.1) — it refuses PowerShell 7, whose parser accepts what it exists to reject:
 
 ```bash
-for f in src/bash/*.sh scripts/*.sh .github/scripts/*.sh; do bash -n "$f" || echo "FAIL $f"; done
+bash .github/scripts/check-syntax-bash.sh
 ```
 
 ```powershell
-powershell.exe -NoProfile -Command {
-    foreach ($f in Get-ChildItem src/pwsh/*.ps1, scripts/*.ps1, .github/scripts/*.ps1) {
-        $e = $null
-        [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$e)
-        if ($e) { $f.Name; $e }
-    }
-}
-```
-
-Parse the assembled profile under 5.1, joined the way `install.ps1` joins it (prints nothing when clean; the nested `powershell.exe` may emit a CLIXML progress record, which is noise):
-
-```powershell
-powershell.exe -NoProfile -Command {
-    $parts = Get-Content src/pwsh/manifest.txt | ForEach-Object { ($_ -split '#')[0].Trim() } | Where-Object { $_ }
-    $body = ($parts | ForEach-Object { (Get-Content -Raw "src/pwsh/$_").TrimEnd("`r", "`n") }) -join "`n`n"
-    $e = $null
-    [void][System.Management.Automation.Language.Parser]::ParseInput($body, [ref]$null, [ref]$e)
-    $e
-}
+powershell.exe -NoProfile -File .github/scripts/check-syntax-pwsh.ps1
 ```
 
 Install / uninstall (these modify the invoking user's home directory, shell profile and login items — see Gotchas before running):
@@ -121,7 +122,7 @@ irm https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/ins
 irm https://raw.githubusercontent.com/LalbaAnthony/common-shell/main/scripts/uninstall.ps1 | iex
 ```
 
-No setup, build, run/dev, test, format, or typecheck commands exist in this repository.
+Beyond enabling the hooks, no setup, build, run/dev, test, format, or typecheck commands exist in this repository.
 
 ## Architecture
 
@@ -150,7 +151,9 @@ Self-management commands, defined in `src/bash/001-self.sh` / `src/pwsh/001-self
 
 `scripts/migration.sh` / `scripts/migration.ps1` branch on `$HOSTNAME` / `$env:COMPUTERNAME`: each known host gets its own block of one-off actions, and any other host is a no-op (the `cshdel` fallback for unknown hosts was removed in `f066036`). The `AGO26L004` block in `migration.ps1` calls a script outside this repo by absolute path (`C:\Users\a.lalba\projects\antho-scripts\…`). Because `cshall` runs at every login and on every manual call, every action placed there runs repeatedly and unattended — it must be idempotent and non-interactive.
 
-CI has three independent jobs (`manifests`, `bash`, `pwsh`) on `ubuntu-latest`, each a single call into `.github/scripts/`. The scripts are the interface; the workflow only supplies pins and caching. All three emit GitHub annotations when `GITHUB_ACTIONS=true` and plain text otherwise. The `pwsh` job runs PSScriptAnalyzer under PowerShell 7 on Linux; no job runs `bash -n` or any 5.1 parse check. Triggers: `push` to `main` only, filtered to `.github/**`, `scripts/**`, `src/**`, `PSScriptAnalyzerSettings.psd1`; every `pull_request`; `workflow_dispatch`. A push to `develop` is not linted unless a PR is open.
+CI has five independent jobs, each a single call into `.github/scripts/`: `manifests` (`check-manifests.sh`), `bash-syntax` (`check-syntax-bash.sh`), `bash` (ShellCheck, `lint-bash.sh`) and `pwsh` (PSScriptAnalyzer under PowerShell 7, `lint-pwsh.ps1`) on `ubuntu-latest`; `pwsh-syntax` (`check-syntax-pwsh.ps1`) on `windows-latest`, the only runner with Windows PowerShell 5.1. The scripts are the interface; the workflow only supplies pins and caching. All five emit GitHub annotations when `GITHUB_ACTIONS=true` and plain text otherwise. Triggers: `push` to `main` only, filtered to `.gitattributes`, `.githooks/**`, `.github/**`, `scripts/**`, `src/**`, `PSScriptAnalyzerSettings.psd1`; every `pull_request`; `workflow_dispatch`. A push to `develop` is not linted by CI unless a PR is open — the pre-push hook covers it locally.
+
+Local checks: `.githooks/pre-commit` and `.githooks/pre-push` only `exec` `.github/scripts/check-all.sh` (`--staged` / `--pre-push`), which runs the five CI checks in parallel, buffers their output and prints it in a fixed order. Each check runs from the root of a **snapshot**: the tree under test (the index, or a pushed branch tip) is exported with `read-tree` + `checkout-index` into `<git-common-dir>/common-shell/run.*/`, and the checks see it through `GIT_DIR`/`GIT_WORK_TREE`/`GIT_INDEX_FILE`, so unstaged edits and untracked files neither hide an error nor cause one. The snapshot's own copy of each check script runs, as in CI; a tree that lacks a script skips that check. A tree that passes has its hash appended to `<git-common-dir>/common-shell/validated-trees` (last 1000 kept); a tree is skipped when it is listed, or when its first parent's tree is listed and `git diff-tree` shows no change under the checked paths (`RELEVANT_PATHS` in `check-all.sh`, mirroring the CI `paths` filter). The pre-push hook checks each distinct branch tip once; tags and deletions are ignored. `check-all.sh` with no option checks the working tree and leaves the cache alone. A missing Docker daemon or PowerShell fails the run; the one exception is `pwsh-syntax` off Windows, skipped with a notice because 5.1 cannot exist there. `check-all.sh` clears `SHELLCHECK_BIN`, `SHELLCHECK_VERSION`, `SHELLCHECK_SEVERITY` and `PSSA_VERSION`, so the hooks always use the pinned versions; PSScriptAnalyzer runs under `pwsh` when present, else `powershell.exe` (Windows, with `-ExecutionPolicy Bypass` at process scope).
 
 ## Conventions
 
@@ -189,7 +192,7 @@ Ask "would I ever want this in the other shell?", not "have I written it yet?".
 
 ## Testing
 
-**No test framework, no test files, no test command.** Linting, `check-manifests.sh` and the syntax checks under Commands are the only automated checks, and CI runs only the first two. Behavioural verification is manual: source the profile and exercise the alias or function.
+**No test framework, no test files, no test command.** Linting, `check-manifests.sh` and the syntax checks under Commands are the only automated checks; CI runs all of them, and so do the pre-commit and pre-push hooks through `check-all.sh`. Behavioural verification is manual: source the profile and exercise the alias or function.
 
 To exercise an installer end to end without touching your own home directory, serve the working tree with `python -m http.server`, rewrite only the `raw.githubusercontent.com` base URL in a *copy* of the installer, and redirect the home directory. Bash takes `HOME=…` directly. **PowerShell's `$HOME` is read-only**: it cannot be assigned, and a script that tries writes to the real home instead. Redirect it by launching `powershell.exe` with `HOMEDRIVE`/`HOMEPATH`/`USERPROFILE` set, then assert `$HOME` really moved before running anything. That redirection does **not** move `$PROFILE` or `[Environment]::GetFolderPath('Startup')` — both resolve through the known-folder API — so also rewrite `$ProfileFile = $PROFILE` (`scripts/install.ps1:11`, `scripts/uninstall.ps1:6`) and the `GetFolderPath('Startup')` calls (`scripts/install.ps1:94`, `scripts/uninstall.ps1:19`) in the copies, or the test writes the hook into your real profile and the shortcut into your real Startup folder. On the Bash side, put a logging `systemctl` stub first on `PATH` to exercise the unit path on a machine without systemd. Avoid sandbox paths containing an 8.3 short name (`A40C9~1.LAL`) — `Remove-Item -Path` reads the `~` as the home shortcut and fails.
 
@@ -200,6 +203,7 @@ To exercise an installer end to end without touching your own home directory, se
 - Lint tooling:
   - `lint-bash.sh` requires a **running** Docker daemon by default. Set `SHELLCHECK_BIN=/path/to/shellcheck` to use a local binary instead (results only match CI if the version matches). Overrides: `SHELLCHECK_VERSION`, `SHELLCHECK_SEVERITY` (default `warning`).
   - `lint-pwsh.ps1` installs PSScriptAnalyzer to `CurrentUser` scope when the pinned version is not already present. Override the pin with `-Version` or `$env:PSSA_VERSION`.
+  - `check-all.sh` (and so the hooks) needs a running Docker daemon, plus `pwsh` — or, on Windows, `powershell.exe`. On Windows it must run under Git Bash; Git for Windows runs the hooks there itself.
 - The profiles call many external CLIs (`docker`, `git`, `curl`, `php`, `composer`, `artisan`, `wp`, `npm`, `yarn`, `npx`, `python`, `claude`, `certbot`, `openssl`, `mysql`). None are validated at source time; individual commands fail if the tool is missing.
 
 ## Gotchas
@@ -207,7 +211,11 @@ To exercise an installer end to end without touching your own home directory, se
 - **Nothing reads the working tree.** Installers and the `csh*` commands fetch from GitHub `main`. A local edit, or a commit on `develop`, reaches no machine until it is merged into `main` and `cshupd` runs (or the next login runs `cshall`). Never run the installers to "test" a local change — they rewrite your real home directory from `main`.
 - **`.gitattributes` enforces line endings**: `*.ps1` → CRLF, `*.sh` → LF, `manifest.txt` → LF. Do not normalise these away — a CRLF shebang breaks Bash scripts on Linux. `eol=crlf` is a *checkout* rule: the blob in the repo is LF, so `raw.githubusercontent.com` serves the `.ps1` parts with LF and the installer normalises from there.
 - **`src/bash/*.sh` parts have no shebang** by design (they are concatenated and sourced). Each part's ShellCheck header directives must stay above its first command or they stop applying file-wide.
-- **`lint-bash.sh` prints `ShellCheck: clean.` when Docker is unreachable.** Docker's error goes to stderr, the captured report is empty, and the script still exits non-zero. Trust the exit code, not the last line.
+- **`lint-bash.sh` prints `ShellCheck: clean.` when Docker is unreachable.** Docker's error goes to stderr, the captured report is empty, and the script still exits non-zero. Trust the exit code, not the last line. `check-all.sh` probes `docker info` first and reports the daemon instead.
+- **A comment line whose first word is `shellcheck` is a ShellCheck directive.** `#   shellcheck   lint-bash.sh` fails the lint with SC1073/SC1072; that is why the check list in `check-all.sh`'s header is bulleted.
+- **The hooks are opt-in per clone and must stay executable.** Nothing runs until `git config core.hooksPath .githooks`. `.githooks/*` are committed with mode `100755` (`git add --chmod=+x`): Git for Windows runs any file starting with `#!`, but on Linux a non-executable hook is ignored with only a hint. `.gitattributes` forces them to LF.
+- **The hooks check a snapshot, not your working tree.** A fix you have not staged does not unblock the commit, and an untracked file does not block it. `bash .github/scripts/check-all.sh` with no option checks the working tree instead.
+- **The hook cache trusts tree hashes.** A tree in `validated-trees` is never rechecked, which is sound only because the tree carries the check scripts and every tool version is pinned. Delete `<git-common-dir>/common-shell/validated-trees` to force a full run, e.g. after changing a pin outside the repository.
 - **Never fetch a part with `Invoke-WebRequest ….Content`.** That property is a `string` for a `text/*` response and a `byte[]` for anything else, so the result silently depends on the server's `Content-Type`; a `byte[]` stringifies into space-separated decimals and the installed profile becomes garbage. `install.ps1` decodes `.RawContentStream` as UTF-8 via `Get-RemoteText` instead, which is header-independent.
 - **The hook string is duplicated across four files and must stay byte-identical.** `scripts/install.sh` / `scripts/uninstall.sh` share `BASHRC_HOOK`, and `scripts/install.ps1` / `scripts/uninstall.ps1` share `$ProfileHook`. Uninstall matches the hook by exact line equality, so editing the string in an installer without editing its uninstaller silently strands the hook in the user's rc file. The login entry names are duplicated the same way (`UNIT_NAME`/`UNIT_DIR` in the `.sh` pair, `$StartupLinkName` in the `.ps1` pair); renaming one side strands a unit or shortcut that keeps running `cshall` at every login.
 - **PowerShell uninstall does not preserve the profile's bytes.** `uninstall.ps1` rewrites `$PROFILE` with `Set-Content` and no `-Encoding`. Under 5.1, a UTF-8-with-BOM profile containing non-ASCII comes back as ANSI (BOM dropped, `é` → `0xE9`, which PowerShell 7 then misreads), and an LF profile comes back CRLF. ASCII or BOM-less UTF-8 with CRLF round-trips intact. Verified under 5.1 only.
@@ -218,5 +226,5 @@ To exercise an installer end to end without touching your own home directory, se
 - **`scripts/install.sh` assumes `~/.bashrc` exists**; `grep` emits a stderr error when it does not, though the append still creates the file. `scripts/install.ps1` explicitly creates `$PROFILE` when missing.
 - **Lint and manifest-check target discovery use `git ls-files --cached --others --exclude-standard`.** Untracked-but-not-ignored files *are* covered; files deleted from the working tree but still in the index are skipped. A file added to `.gitignore` silently drops out of CI coverage — including out of the manifest check.
 - **`Invoke-ScriptAnalyzer -Settings` silently ignores a `PathInfo` object.** Pass a string (`(Resolve-Path …).Path`) or every exclusion is dropped and the run reports dozens of false failures.
-- **`&&` and `||` are PowerShell 7 only.** Windows PowerShell 5.1 rejects them at *parse* time, so a single occurrence anywhere in any part makes the whole generated `profile_extra.ps1` fail to load — every function and alias in it, not just the offending line. Use `;` or `if ($?) { … }`. Same trap for `??`, `?.`, and the ternary `? :`. Inside a string literal they are harmless — `src/pwsh/005-node.ps1:54-55` builds `cd … && npm run dev` strings for a child shell. PSScriptAnalyzer does not catch this; run the 5.1 parse checks under Commands.
+- **`&&` and `||` are PowerShell 7 only.** Windows PowerShell 5.1 rejects them at *parse* time, so a single occurrence anywhere in any part makes the whole generated `profile_extra.ps1` fail to load — every function and alias in it, not just the offending line. Use `;` or `if ($?) { … }`. Same trap for `??`, `?.`, and the ternary `? :`. Inside a string literal they are harmless — `src/pwsh/005-node.ps1:54-55` builds `cd … && npm run dev` strings for a child shell. PSScriptAnalyzer does not catch this; `check-syntax-pwsh.ps1` does, in the `pwsh-syntax` CI job and the hooks on Windows (not on Linux, where only CI catches it).
 - **Some docs still describe the pre-`6c2f0d5` step-by-10 numbering**: `README.md:68`, the header comment of both `manifest.txt` files (line 11), and `.claude/agents/add-shell-command.md:40`, whose examples (like `shell-parity-audit.md`'s) also cite old names such as `110-sql.sh` and `060-git`. The filenames on disk and the Part numbering section above are authoritative.

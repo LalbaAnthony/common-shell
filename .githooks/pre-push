@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Runs every CI check against the tip of each branch being pushed. Trees the
+# pre-commit hook already validated are not checked twice.
+# Enable once per clone: git config core.hooksPath .githooks
+# Bypass: git push --no-verify
+
+set -euo pipefail
+
+# stdin carries the refs being pushed; exec hands it over as is.
+exec "$BASH" "$(git rev-parse --show-toplevel)/.github/scripts/check-all.sh" --pre-push
