@@ -29,6 +29,10 @@ function gacpc {
 }
 
 function gsc {
+    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
+}
+
+function gscc {
     npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets -c "powershell -NoLogo -NonInteractive -Command ccom"
 }
 

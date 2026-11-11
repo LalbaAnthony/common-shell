@@ -29,6 +29,10 @@ gacpc () {
 }
 
 gsc () {
+    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 1:/var/www
+}
+
+gscc () {
     GC_CCOM="$(declare -f ccom); ccom" npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 1:/var/www -c 'bash -c "$GC_CCOM"'
 }
 
