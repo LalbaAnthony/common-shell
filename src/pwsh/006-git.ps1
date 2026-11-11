@@ -58,6 +58,12 @@ function gmep {
         return
     }
 
+    # -ceq: branch names are case-sensitive, as in the Bash version
+    if ($targetBranch -ceq $initialBranch) {
+        Write-Host "Target branch '$targetBranch' is the current branch. Aborting."
+        return
+    }
+
     # Every step stops on failure: a conflict must not be pushed or carried across a checkout
     git fetch
     if ($LASTEXITCODE -ne 0) { return }

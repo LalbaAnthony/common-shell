@@ -55,6 +55,11 @@ gmep () {
         return 1
     }
 
+    if [ "$target_branch" = "$initial_branch" ]; then
+        echo "Target branch '$target_branch' is the current branch. Aborting."
+        return 1
+    fi
+
     git fetch
 
     # Pull the target branch changes into the initial branch (updated CHANGELOG, ...)
