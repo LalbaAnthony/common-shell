@@ -12,6 +12,8 @@ function gbd { git branch -d @args }
 function gundo { git reset --soft HEAD~1 }
 function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
 function gpf { git push --force-with-lease }
+function ghooks { git config core.hooksPath .githooks }
+function ghooksreset { git config --unset core.hooksPath }
 
 function gacp {
     param($message)

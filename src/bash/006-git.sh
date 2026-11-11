@@ -15,6 +15,8 @@ alias gbd='git branch -d'
 alias gundo='git reset --soft HEAD~1'
 alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
+alias ghooks='git config core.hooksPath .githooks'
+alias ghooksreset='git config --unset core.hooksPath'
 
 gacp () {
     if [[ -n "${1//[[:space:]]/}" ]]; then
