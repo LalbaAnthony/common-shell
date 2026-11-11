@@ -39,19 +39,15 @@ function ccom {
     .SYNOPSIS
         Suggest a commit message using Claude Code (headless mode). Describes the staged
         diff when something is staged, otherwise the whole working tree including
-        untracked files, so 'git add' is not required. All arguments are joined as an
-        optional hint.
+        untracked files, so 'git add' is not required.
         Built for pipelines: on success, the output stream carries the one-line message
         and nothing else is written anywhere. On failure, nothing is output, stderr gets
         exactly one 'ccom: <reason>' line and $LASTEXITCODE is 1. git warnings and
         Claude Code notices are discarded, never replayed.
     .EXAMPLE
         ccom
-        ccom fix race condition on login
         ccom | git commit -F -
     #>
-    $Hint = $args -join ' '
-
     # 5.1 wraps redirected native stderr in ErrorRecords, which a caller's 'Stop'
     # preference would make fatal. Function scope only
     $ErrorActionPreference = 'Continue'
@@ -137,7 +133,6 @@ Never use double quotes anywhere in the message; quote names or values with sing
 Recent history:
 $log
 "@
-    if ($Hint) { $prompt += "`n`nContext from the author: $Hint" }
 
     # Claude Code prints startup notices (e.g. the sandbox warning) on stderr: discard them
     $out = $diff | claude -p --model haiku $prompt 2>$null

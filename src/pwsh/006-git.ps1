@@ -13,8 +13,23 @@ function gundo { git reset --soft HEAD~1 }
 function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
 function gpf { git push --force-with-lease }
 
+function gacp {
+    param($message)
+
+    if ([string]::IsNullOrWhiteSpace($message)) {
+        npx -y @lalba-anthony/git-companion acp
+    }
+    else {
+        npx -y @lalba-anthony/git-companion acp "--message=$message"
+    }
+}
+
+function gacpc {
+    npx -y @lalba-anthony/git-companion acp -c "powershell -NoLogo -NonInteractive -Command ccom"
+}
+
 function gsc {
-    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
+    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets -c "powershell -NoLogo -NonInteractive -Command ccom"
 }
 
 function gitign {
@@ -199,44 +214,6 @@ function gclone {
     else {
         Set-Location $repoName
     }
-}
-
-function gacp {
-    param($message)
-
-    $root = git rev-parse --show-toplevel 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Not a git repository."
-        return
-    }
-    if ((Get-Location).Path -ne (Resolve-Path $root).Path) {
-        Write-Host "Not at repo root ($root). Aborting."
-        return
-    }
-
-    if ([string]::IsNullOrWhiteSpace($message)) {
-        $message = Read-Host "Commit message"
-    }
-
-    # Whitespace-only counts as empty: git would reject it, but only after `git add .` ran
-    if ([string]::IsNullOrWhiteSpace($message)) {
-        Write-Host "Commit message required. Aborting."
-        return
-    }
-
-    git add .
-    if ($LASTEXITCODE -ne 0) { return }
-    git commit -m $message
-    if ($LASTEXITCODE -ne 0) { return }
-    git push
-}
-
-function gacpc {
-    # ccom reports its own errors on the host and outputs nothing on failure
-    $message = ccom @args
-    if ([string]::IsNullOrWhiteSpace($message)) { return }
-
-    gacp $message
 }
 
 function groot {

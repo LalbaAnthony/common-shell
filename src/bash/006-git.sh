@@ -16,8 +16,20 @@ alias gundo='git reset --soft HEAD~1'
 alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
 
+gacp () {
+    if [[ -n "${1//[[:space:]]/}" ]]; then
+        npx -y @lalba-anthony/git-companion acp --message="$1"
+    else
+        npx -y @lalba-anthony/git-companion acp
+    fi
+}
+
+gacpc () {
+    GC_CCOM="$(declare -f ccom); ccom" npx -y @lalba-anthony/git-companion acp -c 'bash -c "$GC_CCOM"'
+}
+
 gsc () {
-    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 1:/var/www
+    GC_CCOM="$(declare -f ccom); ccom" npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 1:/var/www -c 'bash -c "$GC_CCOM"'
 }
 
 gitign () {
@@ -171,40 +183,6 @@ gclone() {
     else
         cd "$repo_name" || return 1
     fi
-}
-
-gacp() {
-    local message=$1
-
-    local root
-    root=$(git rev-parse --show-toplevel 2>/dev/null) || {
-        echo "Not a git repository."
-        return 1
-    }
-    if [ "$(pwd -P)" != "$root" ]; then
-        echo "Not at repo root ($root). Aborting."
-        return 1
-    fi
-
-    if [[ -z "${message//[[:space:]]/}" ]]; then
-        read -r -p "Commit message: " message
-    fi
-
-    # Whitespace-only counts as empty: git would reject it, but only after `git add .` ran
-    if [[ -z "${message//[[:space:]]/}" ]]; then
-        echo "Commit message required. Aborting."
-        return 1
-    fi
-
-    git add . && git commit -m "$message" && git push
-}
-
-gacpc() {
-    # ccom reports its own errors on stderr and outputs nothing on failure
-    local message
-    message=$(ccom "$@") || return 1
-
-    gacp "$message"
 }
 
 groot() {

@@ -17,8 +17,6 @@ if ($env:COMPUTERNAME -eq "AGO26L004") { # AGORA
 } elseif ($env:COMPUTERNAME -eq "DESKTOP-OOQN3HB") { # DESKTOP
     # ...
 } elseif ($env:COMPUTERNAME -eq "ZENBOOK") { # LAPTOP
-    Remove-Item "C:\Users\antho\projects\borreze-project" -Recurse -Force -ErrorAction SilentlyContinue
-    Remove-Item "C:\Users\antho\projects\common-shell-migrations" -Recurse -Force -ErrorAction SilentlyContinue
     # ...
 } else {
     # If the computer is not recognized, uninstall common-shell to avoid potential issues

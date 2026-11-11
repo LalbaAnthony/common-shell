@@ -63,16 +63,13 @@ pwclean() {
 ccom() {
     # Suggest a commit message using Claude Code (headless mode). Describes the staged
     # diff when something is staged, otherwise the whole working tree including
-    # untracked files, so 'git add' is not required. All arguments are joined as an
-    # optional hint.
+    # untracked files, so 'git add' is not required.
     # Built for pipelines: on success, stdout carries the one-line message and nothing
     # else is written anywhere. On failure, stdout stays empty, stderr gets exactly one
     # 'ccom: <reason>' line and the status is 1. git warnings and Claude Code notices
     # are discarded, never replayed.
     #   ccom
-    #   ccom fix race condition on login
     #   ccom | git commit -F -
-    local hint="$*"
     local diff scope untracked file log prompt raw msg status
 
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -142,10 +139,6 @@ Recent history:
 $log
 EOF
 )
-
-    if [ -n "$hint" ]; then
-        prompt+=$'\n\nContext from the author: '"$hint"
-    fi
 
     # Claude Code prints startup notices (e.g. the sandbox warning) on stderr. The
     # group discards them, and a broken-pipe error from printf too
