@@ -4,7 +4,7 @@
 alias cc='; claude'
 alias ccinstall='npm install -g @anthropic-ai/claude-code'
 alias ccgo='cd ~/.claude'
-alias ccu='npx ccusage@latest'
+alias ccu='npx -y ccusage@latest'
 
 cctn() {
     # resolve most recent session id for cwd, then hand it to the URI handler

@@ -54,7 +54,7 @@ function npdev {
     if ($front) { $names += 'front'; $colors += 'cyan';    $cmds += "cd $front && npm run dev" }
     if ($back)  { $names += 'back';  $colors += 'magenta'; $cmds += "cd $back && npm run dev" }
 
-    npx concurrently -n ($names -join ',') -c ($colors -join ',') @cmds
+    npx -y concurrently -n ($names -join ',') -c ($colors -join ',') @cmds
 }
 
 # Quasar

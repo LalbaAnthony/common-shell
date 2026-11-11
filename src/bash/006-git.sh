@@ -17,11 +17,11 @@ alias gtags='git tag -l --sort=-creatordate | head -n 10'
 alias gpf='git push --force-with-lease'
 
 gsc () {
-    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 1:/var/www
+    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 1:/var/www
 }
 
 gitign () {
-    npx @lalba-anthony/git-companion ignore $1
+    npx -y @lalba-anthony/git-companion ignore $1
 }
 
 gps() {

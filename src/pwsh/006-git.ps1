@@ -14,13 +14,13 @@ function gtags { git tag -l --sort=-creatordate | Select-Object -First 10 }
 function gpf { git push --force-with-lease }
 
 function gsc {
-    npx @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
+    npx -y @lalba-anthony/git-companion crawl -r ~/.claude -f 0:~/projects -f 2:~/Desktop/Projets
 }
 
 function gitign {
     param($params)
 
-    npx @lalba-anthony/git-companion ignore $params
+    npx -y @lalba-anthony/git-companion ignore $params
 }
 
 # gps is a built-in ReadOnly alias for Get-Process, and aliases win over functions

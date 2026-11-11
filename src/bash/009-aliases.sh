@@ -2,11 +2,11 @@
 # shellcheck disable=SC1091,SC2034,SC2142,SC2154
 
 hxy () {
-    npx @lalba-anthony/hexasky "$1"
+    npx -y @lalba-anthony/hexasky "$1"
 }
 
 mdclean () {
-    npx @lalba-anthony/md-cleaner $1
+    npx -y @lalba-anthony/md-cleaner $1
 }
 
 fzc () {

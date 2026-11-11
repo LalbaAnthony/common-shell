@@ -54,7 +54,7 @@ npdev() {
         names+=("back"); colors+=("magenta"); cmds+=("cd $back && npm run dev")
     fi
 
-    npx concurrently -n "$(IFS=,; echo "${names[*]}")" -c "$(IFS=,; echo "${colors[*]}")" "${cmds[@]}"
+    npx -y concurrently -n "$(IFS=,; echo "${names[*]}")" -c "$(IFS=,; echo "${colors[*]}")" "${cmds[@]}"
 }
 
 # Quasar

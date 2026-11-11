@@ -1,7 +1,7 @@
 function cc { ; claude }
 function ccinstall { npm install -g @anthropic-ai/claude-code }
 function ccgo { Set-Location "$HOME\.claude" }
-function ccu { npx ccusage@latest }
+function ccu { npx -y ccusage@latest }
 
 function cctn {
     # resolve most recent session id for cwd, then hand it to the URI handler

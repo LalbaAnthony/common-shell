@@ -27,7 +27,7 @@ kdev() {
         return 1
     fi
 
-    npx concurrently -n front -c cyan \
+    npx -y concurrently -n front -c cyan \
         "cd front && yarn dev"
 }
 
@@ -70,7 +70,7 @@ atld() {
         return 1
     fi
 
-    npx concurrently -n front,back,back-worker -c cyan,magenta,magenta \
+    npx -y concurrently -n front,back,back-worker -c cyan,magenta,magenta \
         "cd front && yarn dev" \
         "cd back && npm run dev" \
         "cd back && php artisan queue:work"

@@ -1,13 +1,13 @@
 function hxy {
     param($location)
 
-    npx @lalba-anthony/hexasky $location
+    npx -y @lalba-anthony/hexasky $location
 }
 
 function mdclean {
     param($file)
 
-    npx @lalba-anthony/md-cleaner $file
+    npx -y @lalba-anthony/md-cleaner $file
 }
 
 function fzc {
