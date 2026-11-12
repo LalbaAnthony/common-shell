@@ -76,6 +76,41 @@ atld() {
         "cd back && php artisan queue:work"
 }
 
+#  -------- WordPress --------
+
+# Point a database imported from production at http://<current dir>.dev4
+# Extra arguments go to every search-replace, e.g. `wpset --dry-run`
+wpset() {
+    local old_url old new
+    old_url=$(wp option get siteurl) || return
+    old=${old_url#*://}
+    old=${old%%/*}
+    new="$(basename "$PWD").dev4"
+
+    if [[ -z $old ]]; then
+        echo "Cannot extract a host from siteurl: '$old_url'" >&2
+        return 1
+    fi
+    if [[ $old == "$new" ]]; then
+        echo "siteurl already points at $new"
+        return 0
+    fi
+
+    echo "Replacing $old with $new"
+    wp search-replace "https://$old" "http://$new" --all-tables "$@" || return
+    wp search-replace "http://$old" "http://$new" --all-tables "$@" || return
+    wp search-replace "https:\\/\\/$old" "http:\\/\\/$new" --all-tables "$@" || return
+    wp search-replace "http:\\/\\/$old" "http:\\/\\/$new" --all-tables "$@" || return
+    wp search-replace "$old" "$new" --all-tables "$@" || return
+
+    if wp plugin is-active elementor; then
+        wp elementor flush-css || return
+    fi
+
+    echo "New siteurl:"
+    wp option get siteurl
+}
+
 #  -------- Common --------
 
 devs() {
