@@ -126,6 +126,7 @@ devs() {
     local names=() cmds=()
     names+=("nuxt-wp-php7.4");           cmds+=("${setnode}22 && ${setphp}7.4 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-nuxt-wp-php74.conf && $a2restart")
     names+=("nuxt-wp-php8.3");           cmds+=("${setnode}22 && ${setphp}8.3 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-nuxt-wp-php83.conf && $a2restart")
+    names+=("nuxt-wp-php8.5");           cmds+=("${setnode}22 && ${setphp}8.5 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-nuxt-wp-php85.conf && $a2restart")
     names+=("atlas-php8.4");             cmds+=("${setnode}22 && ${setphp}8.4 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-atlas-php84.conf && $a2restart")
     names+=("atlas-php8.5");             cmds+=("${setnode}22 && ${setphp}8.5 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-atlas-php85.conf && $a2restart")
     names+=("ample-php5.6");             cmds+=("${setnode}24 && ${setphp}5.6 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-ample-php56.conf && $a2restart")
