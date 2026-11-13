@@ -54,6 +54,12 @@ makesomespace() {
     rm -rf ~/.cache/*
     echo "Cache cleared."
 
+    # ====== Clearing root backups ======
+    
+    echo "Clearing root backups..."
+    rm -rf /root/backups
+    echo "Root backups cleared."
+
     # ====== Removing old Node.js versions ======
 
     echo "Removing old Node.js versions..."
