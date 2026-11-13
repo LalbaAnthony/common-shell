@@ -35,3 +35,4 @@
 104-php.sh
 105-laravel.sh
 109-wordpress.sh
+110-ssh.sh
