@@ -3,6 +3,10 @@ function ccinstall { npm install -g @anthropic-ai/claude-code }
 function ccgo { Set-Location "$HOME\.claude" }
 function ccusage { npx -y ccusage@latest }
 
+function ccu { 
+    Start-Process 'https://claude.ai/new#settings/usage'
+} 
+
 function cctn {
     # resolve most recent session id for cwd, then hand it to the URI handler
     $dir = "$HOME\.claude\projects\" + ($PWD.Path -replace '[^a-zA-Z0-9]', '-')

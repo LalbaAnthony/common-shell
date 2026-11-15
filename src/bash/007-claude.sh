@@ -6,6 +6,25 @@ alias ccinstall='npm install -g @anthropic-ai/claude-code'
 alias ccgo='cd ~/.claude'
 alias ccusage='npx -y ccusage@latest'
 
+ccu() {
+    # open the claude.ai usage page in the default browser
+    local url='https://claude.ai/new#settings/usage'
+
+    if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$url" >/dev/null 2>&1 &
+    elif command -v open >/dev/null 2>&1; then
+        open "$url"
+    elif command -v wslview >/dev/null 2>&1; then
+        wslview "$url"
+    elif command -v explorer.exe >/dev/null 2>&1; then
+        # explorer.exe exits 1 even on success
+        explorer.exe "$url" >/dev/null 2>&1 || true
+    else
+        echo "No browser opener found (xdg-open, open, wslview, explorer.exe)." >&2
+        return 1
+    fi
+}
+
 cctn() {
     # resolve most recent session id for cwd, then hand it to the URI handler
     local dir sid uri
