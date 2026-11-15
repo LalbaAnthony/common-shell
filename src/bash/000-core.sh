@@ -28,3 +28,39 @@ export HISTFILESIZE=10000
 export HISTIGNORE="&:ls:cd:cd -:pwd:exit:clear"
 shopt -s histappend
 set +H # Disable ! style history expansion
+
+# Open a file, directory, URL or URI with the desktop's default handler and
+# return without waiting for it: the Bash counterpart of PowerShell's
+# Start-Process <target>. Status 1 on bad usage or when no opener exists.
+xopen() {
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: xopen <path|url|uri>" >&2
+        return 1
+    fi
+
+    local target=$1
+
+    if command -v xdg-open >/dev/null 2>&1; then
+        # xdg-open can block until the handler exits. Detach it inside a
+        # subshell, so job control neither reports it nor hangs it up
+        (xdg-open "$target" >/dev/null 2>&1 &)
+    elif command -v open >/dev/null 2>&1; then
+        open "$target"
+    elif command -v wslview >/dev/null 2>&1; then
+        wslview "$target"
+    elif command -v explorer.exe >/dev/null 2>&1; then
+        # explorer.exe only understands Windows paths; URLs and URIs pass as is
+        if [ -e "$target" ]; then
+            if command -v cygpath >/dev/null 2>&1; then
+                target=$(cygpath -aw "$target")
+            elif command -v wslpath >/dev/null 2>&1; then
+                target=$(wslpath -aw "$target")
+            fi
+        fi
+        # explorer.exe exits 1 even on success
+        explorer.exe "$target" >/dev/null 2>&1 || true
+    else
+        echo "xopen: no opener found (xdg-open, open, wslview, explorer.exe)." >&2
+        return 1
+    fi
+}

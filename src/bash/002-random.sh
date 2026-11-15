@@ -84,19 +84,7 @@ makesomespace() {
 
 # Open the current directory in the file explorer
 expl() {
-    if command -v xdg-open >/dev/null 2>&1; then
-        xdg-open . >/dev/null 2>&1 &
-    elif command -v open >/dev/null 2>&1; then
-        open .
-    elif command -v wslview >/dev/null 2>&1; then
-        wslview .
-    elif command -v explorer.exe >/dev/null 2>&1; then
-        # explorer.exe exits 1 even on success
-        explorer.exe . >/dev/null 2>&1 || true
-    else
-        echo "No file explorer opener found (xdg-open, open, wslview, explorer.exe)."
-        return 1
-    fi
+    xopen .
 }
 
 # Create a folder and cd into it

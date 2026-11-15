@@ -8,26 +8,12 @@ alias ccusage='npx -y ccusage@latest'
 
 ccu() {
     # open the claude.ai usage page in the default browser
-    local url='https://claude.ai/new#settings/usage'
-
-    if command -v xdg-open >/dev/null 2>&1; then
-        xdg-open "$url" >/dev/null 2>&1 &
-    elif command -v open >/dev/null 2>&1; then
-        open "$url"
-    elif command -v wslview >/dev/null 2>&1; then
-        wslview "$url"
-    elif command -v explorer.exe >/dev/null 2>&1; then
-        # explorer.exe exits 1 even on success
-        explorer.exe "$url" >/dev/null 2>&1 || true
-    else
-        echo "No browser opener found (xdg-open, open, wslview, explorer.exe)." >&2
-        return 1
-    fi
+    xopen 'https://claude.ai/new#settings/usage'
 }
 
 cctn() {
     # resolve most recent session id for cwd, then hand it to the URI handler
-    local dir sid uri
+    local dir sid
     dir="$HOME/.claude/projects/$(pwd | sed 's/[^a-zA-Z0-9]/-/g')"
     sid=$(basename "$(ls -t "$dir"/*.jsonl 2>/dev/null | head -1)" .jsonl 2>/dev/null)
 
@@ -36,21 +22,7 @@ cctn() {
         return 1
     fi
 
-    uri="vscode://anthropic.claude-code/open?session=$sid"
-
-    if command -v xdg-open >/dev/null 2>&1; then
-        xdg-open "$uri" >/dev/null 2>&1 &
-    elif command -v open >/dev/null 2>&1; then
-        open "$uri"
-    elif command -v wslview >/dev/null 2>&1; then
-        wslview "$uri"
-    elif command -v explorer.exe >/dev/null 2>&1; then
-        # explorer.exe exits 1 even on success
-        explorer.exe "$uri" >/dev/null 2>&1 || true
-    else
-        echo "No URI opener found (xdg-open, open, wslview, explorer.exe)." >&2
-        return 1
-    fi
+    xopen "vscode://anthropic.claude-code/open?session=$sid"
 }
 
 cscratchpad() {

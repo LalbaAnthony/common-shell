@@ -257,20 +257,7 @@ gopen() {
     fi
 
     echo "$web_url"
-
-    if command -v xdg-open >/dev/null 2>&1; then
-        xdg-open "$web_url" >/dev/null 2>&1 &
-    elif command -v open >/dev/null 2>&1; then
-        open "$web_url"
-    elif command -v wslview >/dev/null 2>&1; then
-        wslview "$web_url"
-    elif command -v explorer.exe >/dev/null 2>&1; then
-        # explorer.exe exits 1 even on success
-        explorer.exe "$web_url" >/dev/null 2>&1 || true
-    else
-        echo "No browser opener found (xdg-open, open, wslview, explorer.exe)."
-        return 1
-    fi
+    xopen "$web_url"
 }
 
 gprune() {
