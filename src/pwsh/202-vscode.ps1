@@ -43,7 +43,8 @@ function vsclose {
 function vsdiff {
     # Open in VS Code every file touched by a git diff. Arguments are forwarded
     # to `git diff` verbatim; with none, the range matches `gd` (current branch
-    # against its origin counterpart).
+    # against its origin counterpart) and untracked files are opened too, since
+    # `git diff` never lists them.
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$DiffArgs)
 
     git rev-parse --is-inside-work-tree 2>$null | Out-Null
@@ -60,21 +61,34 @@ function vsdiff {
     $root = git rev-parse --show-toplevel
     if ($LASTEXITCODE -ne 0) { return }
 
+    $includeUntracked = $false
     if (-not $DiffArgs -or $DiffArgs.Count -eq 0) {
         $branch = git rev-parse --abbrev-ref HEAD
         $DiffArgs = @("origin/$branch")
+        $includeUntracked = $true
     }
 
     # --diff-filter=d drops deletions: there is nothing left to open.
     # core.quotePath=false keeps non-ASCII paths literal instead of octal-escaped.
-    $files = git -c core.quotePath=false diff --name-only --diff-filter=d @DiffArgs
+    $files = @(git -c core.quotePath=false diff --name-only --diff-filter=d @DiffArgs)
     if ($LASTEXITCODE -ne 0) {
         Write-Host "git diff failed."
         return
     }
 
+    if ($includeUntracked) {
+        # Run from the root: from a subdirectory, ls-files only lists that
+        # subdirectory, relative to it, while diff paths are root-relative.
+        $untracked = @(git -C $root -c core.quotePath=false ls-files --others --exclude-standard)
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "git ls-files failed."
+            return
+        }
+        $files += $untracked
+    }
+
     $paths = @()
-    foreach ($file in $files) {
+    foreach ($file in ($files | Select-Object -Unique)) {
         if (-not $file) { continue }
         $path = Join-Path $root $file
         if (Test-Path -LiteralPath $path) {
