@@ -13,6 +13,14 @@ crij() {
 
 #  -------- Kronos --------
 
+3m() {
+    local dir
+    for dir in /var/www/html/3-{mousses,mousquetons}; do
+        echo "=== $(basename "$dir") ==="
+        (cd "$dir" && "$@") || echo "ERREUR dans $dir"
+    done
+}
+
 kwc() {
     if [ -d "back" ]; then
         cd back || return
