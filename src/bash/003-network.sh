@@ -87,3 +87,47 @@ nlighthouse() {
 
     lighthouse "$1"
 }
+
+# Measure latency, download and upload against Cloudflare's speed test - one stream, at most 10 s per direction
+speedcheck() {
+    local base='https://speed.cloudflare.com'
+    local bytes=99999999 # Largest payload the endpoint serves - 100000000 and up gets a 403
+    local out rc payload
+
+    # Five empty requests over one connection: first byte minus pre-transfer time is one round trip
+    out=$(curl -fsS -w '%{time_starttransfer} %{time_pretransfer}\n' \
+        "$base/__down?bytes=0" "$base/__down?bytes=0" "$base/__down?bytes=0" "$base/__down?bytes=0" "$base/__down?bytes=0") || {
+        echo "Latency test failed"
+        return 1
+    }
+    echo "$out" | awk '{ print ($1 - $2) * 1000 }' | LC_ALL=C sort -n |
+        awk '{ v[NR] = $1 } END { printf "Latency:  %.1f ms\n", v[int((NR + 1) / 2)] }'
+
+    # Rates exclude handshake time; curl exit 28 is the time limit, which ends the transfer below ~80 Mbps
+    out=$(curl -fs -o /dev/null --max-time 10 -w '%{size_download} %{time_starttransfer} %{time_total}' "$base/__down?bytes=$bytes")
+    rc=$?
+    if [ "$rc" -ne 0 ] && [ "$rc" -ne 28 ]; then
+        echo "Download test failed (curl exit $rc)"
+        return 1
+    fi
+    echo "$out" | awk '{ d = $3 - $2; printf "Download: %.1f Mbps\n", (d > 0 ? $1 * 8 / d / 1e6 : 0) }'
+
+    payload=$(mktemp) || {
+        echo "Upload test failed: cannot create a temporary file"
+        return 1
+    }
+    # Sparse file: sized without writing 100 MB to disk
+    if ! dd if=/dev/zero of="$payload" bs=1 count=0 seek="$bytes" 2>/dev/null; then
+        rm -f "$payload"
+        echo "Upload test failed: cannot size the payload"
+        return 1
+    fi
+    out=$(curl -fs -o /dev/null --max-time 10 -X POST -T "$payload" -w '%{size_upload} %{time_pretransfer} %{time_total}' "$base/__up")
+    rc=$?
+    rm -f "$payload"
+    if [ "$rc" -ne 0 ] && [ "$rc" -ne 28 ]; then
+        echo "Upload test failed (curl exit $rc)"
+        return 1
+    fi
+    echo "$out" | awk '{ d = $3 - $2; printf "Upload:   %.1f Mbps\n", (d > 0 ? $1 * 8 / d / 1e6 : 0) }'
+}
