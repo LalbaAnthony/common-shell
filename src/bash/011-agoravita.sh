@@ -152,7 +152,7 @@ devs() {
     names+=("wordpress-php8.5");         cmds+=("${setnode}24 && ${setphp}8.5 && $a2disall && $a2endefaultdev && $a2enmaildev && sudo a2ensite dev-111-wordpress-php85.conf && $a2restart")
 
     # selection
-    local count=${#names[@]} idx="" REPLY PS3 _
+    local count=${#names[@]} idx=""
     if [[ $# -gt 0 ]]; then
         idx=$1
         if ! [[ $idx =~ ^[0-9]+$ ]] || (( idx < 1 || idx > count )); then
@@ -160,16 +160,8 @@ devs() {
             return 1
         fi
     else
-        PS3="choice (1-$count): "
-        select _ in "${names[@]}"; do
-            if [[ ${REPLY:-} =~ ^[0-9]+$ ]] && (( REPLY >= 1 && REPLY <= count )); then
-                idx=$REPLY
-                break
-            fi
-            echo "invalid choice" >&2
-        done
+        idx=$(xselect "choice" "${names[@]}") || return
     fi
-    [[ -n $idx ]] || return 1
 
     # run
     printf '\n[%s]\n%s\n\n' "${names[idx-1]}" "${cmds[idx-1]}"

@@ -47,15 +47,11 @@ webperms() {
 }
 
 a2pick() {
-    local sites
+    local sites idx
     sites=(/etc/apache2/sites-available/*.conf)
 
-    select site in "${sites[@]}"; do
-        [ -n "$site" ] || { echo "Invalid choice"; return 1; }
-        sudo a2dissite *.conf
-        sudo a2ensite "$(basename "$site")"
-        sudo systemctl restart apache2
-        sudo apache2ctl configtest
-        break
-    done
+    idx=$(xselect "site" "${sites[@]}") || return
+    sudo a2dissite *.conf
+    sudo a2ensite "$(basename "${sites[idx-1]}")"
+    sudo apache2ctl configtest && sudo systemctl restart apache2
 }

@@ -64,3 +64,30 @@ xopen() {
         return 1
     fi
 }
+
+# Numbered menu, one item per line, read from the terminal. Prints the 1-based
+# index of the chosen item on stdout; the menu and prompt go to stderr, so it
+# works inside $(...). Re-prompts on invalid input. Status 1 on bad usage or
+# end of input (Ctrl-D).
+#   idx=$(xselect "preset" "${names[@]}") || return
+xselect() {
+    if [ "$#" -lt 2 ]; then
+        echo "Usage: xselect <prompt> <item>..." >&2
+        return 1
+    fi
+
+    local label=$1
+    shift
+
+    # select lays items out in columns sized to COLUMNS; 1 forces one per line
+    local COLUMNS=1 PS3="$label (1-$#): " REPLY _
+    select _ in "$@"; do
+        # No leading zero: (( 08 )) is an invalid octal literal
+        if [[ $REPLY =~ ^[1-9][0-9]*$ ]] && (( REPLY <= $# )); then
+            echo "$REPLY"
+            return 0
+        fi
+        echo "invalid choice" >&2
+    done
+    return 1
+}
