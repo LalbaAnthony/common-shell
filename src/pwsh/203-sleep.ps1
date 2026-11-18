@@ -1,7 +1,7 @@
-# Sleep and shutdown timers. Each countdown runs in a detached hidden PowerShell
+# Sleep, shutdown and reboot timers. Each countdown runs in a detached hidden PowerShell
 # process, so it survives this terminal closing; its PID is parked in a file so any
-# session can cancel it. One pending timer per action; sleep and shutdown timers are
-# independent of each other.
+# session can cancel it. One pending timer per action; sleep, shutdown and reboot timers
+# are independent of each other.
 
 function Get-PowerTimerPidFile {
     param([Parameter(Mandatory)][string]$Name)
@@ -92,4 +92,26 @@ function shutdowncancel {
     if ($Quiet) { return }
 
     if ($cancelled) { Write-Host 'Shutdown timer cancelled.' } else { Write-Host 'No shutdown timer pending.' }
+}
+
+function rebootin {
+    param([int]$Minutes = 10)
+
+    if ($Minutes -lt 1) {
+        Write-Host 'Minutes must be 1 or more.'
+        return
+    }
+
+    # No /f, for the same reason as shutdownin.
+    $at = Register-PowerTimer -Name 'reboot' -Minutes $Minutes -Command 'shutdown.exe /r /t 0'
+    Write-Host "Rebooting at $at (in $Minutes min). Cancel with: rebootcancel"
+}
+
+function rebootcancel {
+    param([switch]$Quiet)
+
+    $cancelled = Unregister-PowerTimer -Name 'reboot'
+    if ($Quiet) { return }
+
+    if ($cancelled) { Write-Host 'Reboot timer cancelled.' } else { Write-Host 'No reboot timer pending.' }
 }
