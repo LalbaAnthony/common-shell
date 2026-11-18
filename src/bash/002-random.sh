@@ -52,14 +52,14 @@ makesomespace() {
     
     echo "Clearing cache..."
     rm -rf ~/.cache/*
+    rm -rf ~/.wp-cli/cache/*
     echo "Cache cleared."
 
     # ====== Clearing root backups ======
     
-    echo "Clearing root backups..."
-    rm -rf /root/backups
+    echo "Clearing backups..."
     rm -rf ~/backups
-    echo "Root backups cleared."
+    echo "Backups cleared."
 
     # ====== Removing old Node.js versions ======
 
