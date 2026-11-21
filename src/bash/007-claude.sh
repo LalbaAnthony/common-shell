@@ -52,19 +52,21 @@ pwclean() {
 }
 
 ccag() {
-    # copy CLAUDE.md into AGENTS.md, then reduce CLAUDE.md to an @AGENTS.md import
+    # copy CLAUDE.md into AGENTS.md, reduce CLAUDE.md to an @AGENTS.md import,
+    # then point every bare CLAUDE.md reference in AGENTS.md at AGENTS.md
+    local import='@AGENTS.md' answer
+
     if [ ! -f CLAUDE.md ]; then
         echo "ccag: no CLAUDE.md in $(pwd)" >&2
         return 1
     fi
 
-    if grep -qF '@AGENTS.md' CLAUDE.md; then
-        echo "ccag: CLAUDE.md already contains @AGENTS.md" >&2
+    if grep -qF "$import" CLAUDE.md; then
+        echo "ccag: CLAUDE.md already contains $import" >&2
         return 1
     fi
 
     if [ -s AGENTS.md ]; then
-        local answer
         read -r -p "AGENTS.md exists and is not empty. Overwrite? [y/N] " answer
         case "$answer" in
             [yY]*) ;;
@@ -73,7 +75,10 @@ ccag() {
     fi
 
     cp CLAUDE.md AGENTS.md || return 1
-    printf '@AGENTS.md\n' > CLAUDE.md
+    printf '%s\n' "$import" > CLAUDE.md || return 1
+    # a CLAUDE.md right after a path separator (.claude/CLAUDE.md, ~/.claude/CLAUDE.md)
+    # names another file, which was not migrated: leave it as is
+    sed -i -E 's#(^|[^/\\])CLAUDE\.md#\1AGENTS.md#g' AGENTS.md
 }
 
 ccom() {

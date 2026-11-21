@@ -39,14 +39,17 @@ function pwclean {
 }
 
 function ccag {
-    # copy CLAUDE.md into AGENTS.md, then reduce CLAUDE.md to an @AGENTS.md import
+    # copy CLAUDE.md into AGENTS.md, reduce CLAUDE.md to an @AGENTS.md import,
+    # then point every bare CLAUDE.md reference in AGENTS.md at AGENTS.md
+    $import = '@AGENTS.md'
+
     if (-not (Test-Path -LiteralPath CLAUDE.md -PathType Leaf)) {
         Write-Error "ccag: no CLAUDE.md in $PWD"
         return
     }
 
-    if (Select-String -LiteralPath CLAUDE.md -SimpleMatch '@AGENTS.md' -Quiet) {
-        Write-Error 'ccag: CLAUDE.md already contains @AGENTS.md'
+    if (Select-String -LiteralPath CLAUDE.md -SimpleMatch $import -Quiet) {
+        Write-Error "ccag: CLAUDE.md already contains $import"
         return
     }
 
@@ -59,7 +62,15 @@ function ccag {
     }
 
     Copy-Item -LiteralPath CLAUDE.md -Destination AGENTS.md -ErrorAction Stop
-    Set-Content -LiteralPath CLAUDE.md -Value '@AGENTS.md'
+    Set-Content -LiteralPath CLAUDE.md -Value $import -ErrorAction Stop
+
+    # .NET resolves relative paths against the process directory, not $PWD. ReadAllText
+    # decodes UTF-8 (Get-Content -Raw reads ANSI under 5.1) and keeps line endings as is
+    # A CLAUDE.md right after a path separator (.claude/CLAUDE.md, ~/.claude/CLAUDE.md)
+    # names another file, which was not migrated: leave it as is
+    $agents = (Resolve-Path -LiteralPath AGENTS.md).ProviderPath
+    $text = [IO.File]::ReadAllText($agents) -creplace '(?<![\\/])CLAUDE\.md', 'AGENTS.md'
+    [IO.File]::WriteAllText($agents, $text)
 }
 
 function ccom {
