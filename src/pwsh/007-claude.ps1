@@ -38,6 +38,30 @@ function pwclean {
         Remove-Item -Recurse -Force
 }
 
+function ccagents {
+    # copy CLAUDE.md into AGENTS.md, then reduce CLAUDE.md to an @AGENTS.md import
+    if (-not (Test-Path -LiteralPath CLAUDE.md -PathType Leaf)) {
+        Write-Error "ccagents: no CLAUDE.md in $PWD"
+        return
+    }
+
+    if (Select-String -LiteralPath CLAUDE.md -SimpleMatch '@AGENTS.md' -Quiet) {
+        Write-Error 'ccagents: CLAUDE.md already contains @AGENTS.md'
+        return
+    }
+
+    if ((Test-Path -LiteralPath AGENTS.md -PathType Leaf) -and (Get-Item -LiteralPath AGENTS.md).Length -gt 0) {
+        $answer = Read-Host 'AGENTS.md exists and is not empty. Overwrite? [y/N]'
+        if ($answer -notmatch '^[yY]') {
+            Write-Error 'ccagents: aborted'
+            return
+        }
+    }
+
+    Copy-Item -LiteralPath CLAUDE.md -Destination AGENTS.md -ErrorAction Stop
+    Set-Content -LiteralPath CLAUDE.md -Value '@AGENTS.md'
+}
+
 function ccom {
     <#
     .SYNOPSIS

@@ -51,6 +51,31 @@ pwclean() {
     find .playwright-mcp -mindepth 1 -delete
 }
 
+ccagents() {
+    # copy CLAUDE.md into AGENTS.md, then reduce CLAUDE.md to an @AGENTS.md import
+    if [ ! -f CLAUDE.md ]; then
+        echo "ccagents: no CLAUDE.md in $(pwd)" >&2
+        return 1
+    fi
+
+    if grep -qF '@AGENTS.md' CLAUDE.md; then
+        echo "ccagents: CLAUDE.md already contains @AGENTS.md" >&2
+        return 1
+    fi
+
+    if [ -s AGENTS.md ]; then
+        local answer
+        read -r -p "AGENTS.md exists and is not empty. Overwrite? [y/N] " answer
+        case "$answer" in
+            [yY]*) ;;
+            *) echo "ccagents: aborted" >&2; return 1 ;;
+        esac
+    fi
+
+    cp CLAUDE.md AGENTS.md || return 1
+    printf '@AGENTS.md\n' > CLAUDE.md
+}
+
 ccom() {
     # Suggest a commit message using Claude Code (headless mode). Describes the staged
     # diff when something is staged, otherwise the whole working tree including
