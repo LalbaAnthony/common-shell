@@ -51,15 +51,15 @@ pwclean() {
     find .playwright-mcp -mindepth 1 -delete
 }
 
-ccagents() {
+ccag() {
     # copy CLAUDE.md into AGENTS.md, then reduce CLAUDE.md to an @AGENTS.md import
     if [ ! -f CLAUDE.md ]; then
-        echo "ccagents: no CLAUDE.md in $(pwd)" >&2
+        echo "ccag: no CLAUDE.md in $(pwd)" >&2
         return 1
     fi
 
     if grep -qF '@AGENTS.md' CLAUDE.md; then
-        echo "ccagents: CLAUDE.md already contains @AGENTS.md" >&2
+        echo "ccag: CLAUDE.md already contains @AGENTS.md" >&2
         return 1
     fi
 
@@ -68,7 +68,7 @@ ccagents() {
         read -r -p "AGENTS.md exists and is not empty. Overwrite? [y/N] " answer
         case "$answer" in
             [yY]*) ;;
-            *) echo "ccagents: aborted" >&2; return 1 ;;
+            *) echo "ccag: aborted" >&2; return 1 ;;
         esac
     fi
 
