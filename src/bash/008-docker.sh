@@ -1,0 +1,219 @@
+# shellcheck shell=bash
+# shellcheck disable=SC1091,SC2034,SC2142,SC2154
+
+alias dcb='docker compose up --build -d'
+alias dpa='docker ps -a'
+alias drm='docker rm -f'
+alias dst='docker stats'
+alias dim='docker images'
+alias dclean='docker system prune -af --volumes'
+alias drestart='docker restart $(docker ps -q)' # Restart all running containers
+
+dps() {
+    # Default cols minus IMAGE and COMMAND
+    docker ps --format "table {{.ID}}\t{{.Names}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}"
+}
+
+dbug() {
+    if [ -z "$1" ]; then
+        echo "Usage: dbug <container_name_or_id>"
+        return 1
+    fi
+
+    docker debug "$1"
+}
+
+dexec() {
+    if [ -z "$1" ]; then
+        echo "Usage: dexec <container_name_or_id>"
+        return 1
+    fi
+
+    docker exec -it "$1" /bin/bash || docker exec -it "$1" /bin/sh
+}
+
+dlogs() {
+    if [ -z "$1" ]; then
+        echo "Usage: dlogs <container_name_or_id>"
+        return 1
+    fi
+
+    docker logs -f "$1"
+}
+
+denv() {
+    if [ -z "$1" ]; then
+        echo "Usage: denv <container_name_or_id>"
+        return 1
+    fi
+
+    docker exec -it "$1" env
+}
+
+derase() {
+    # -f / --force skips the confirmation token
+    local force=0 token confirm
+    case "$1" in
+        '') ;;
+        -f|--force) force=1 ;;
+        *)
+            echo "Usage: derase [-f|--force]"
+            return 1
+            ;;
+    esac
+
+    echo "WARNING: This will destroy ALL Docker volumes."
+    echo "Current state:"
+    echo "  Volumes:    $(docker volume ls -q 2>/dev/null | wc -l)"
+    echo ""
+
+    if [ "$force" -eq 0 ]; then
+        token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
+        read -rp "Type '$token' to confirm: " confirm
+
+        if [ "$confirm" != "$token" ]; then
+            echo "Aborted."
+            return 1
+        fi
+    fi
+
+    # shellcheck disable=SC2046 # word splitting is wanted: one arg per volume ID
+    docker volume rm $(docker volume ls -q) 2>/dev/null
+
+    echo "All Docker volumes removed."
+}
+
+dpurge() {
+    # -f / --force skips the confirmation token
+    local force=0 token confirm
+    case "$1" in
+        '') ;;
+        -f|--force) force=1 ;;
+        *)
+            echo "Usage: dpurge [-f|--force]"
+            return 1
+            ;;
+    esac
+
+    echo "WARNING: This will destroy ALL Docker containers and volumes."
+    echo "Current state:"
+    echo "  Containers: $(docker ps -aq 2>/dev/null | wc -l)"
+    echo "  Volumes:    $(docker volume ls -q 2>/dev/null | wc -l)"
+    echo ""
+
+    if [ "$force" -eq 0 ]; then
+        token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
+        read -rp "Type '$token' to confirm: " confirm
+
+        if [ "$confirm" != "$token" ]; then
+            echo "Aborted."
+            return 1
+        fi
+    fi
+
+    # Containers first: a volume still referenced by any container cannot be removed
+    # shellcheck disable=SC2046 # word splitting is wanted: one arg per container/volume ID
+    docker rm -f $(docker ps -aq) 2>/dev/null
+    # shellcheck disable=SC2046
+    docker volume rm $(docker volume ls -q) 2>/dev/null
+
+    echo "All Docker containers and volumes removed."
+}
+
+dnuke() {
+    # -f / --force skips the confirmation token
+    local force=0 token confirm
+    case "$1" in
+        '') ;;
+        -f|--force) force=1 ;;
+        *)
+            echo "Usage: dnuke [-f|--force]"
+            return 1
+            ;;
+    esac
+
+    echo "WARNING: This will destroy ALL Docker containers, images, volumes, networks, and build cache."
+    echo "Current state:"
+    echo "  Containers: $(docker ps -aq 2>/dev/null | wc -l)"
+    echo "  Images:     $(docker images -q 2>/dev/null | wc -l)"
+    echo "  Volumes:    $(docker volume ls -q 2>/dev/null | wc -l)"
+    echo ""
+
+    if [ "$force" -eq 0 ]; then
+        token=$(LC_ALL=C tr -dc 'A-Z0-9' < /dev/urandom | head -c 6)
+        read -rp "Type '$token' to confirm: " confirm
+
+        if [ "$confirm" != "$token" ]; then
+            echo "Aborted."
+            return 1
+        fi
+    fi
+
+    # shellcheck disable=SC2046 # word splitting is wanted: one arg per container/volume ID
+    docker rm -f $(docker ps -aq) 2>/dev/null
+    # shellcheck disable=SC2046
+    docker volume rm $(docker volume ls -q) 2>/dev/null
+    docker system prune -a --volumes -f
+    docker builder prune -a -f
+
+    echo "Docker environment wiped."
+}
+
+ddown() {
+    local ids
+    ids=$(docker ps -aq 2>/dev/null)
+
+    if [ -z "$ids" ]; then
+        echo "No containers running."
+        return 0
+    fi
+
+    echo "Stopping $(echo "$ids" | wc -l) container(s)..."
+    docker stop $ids
+    echo "All containers stopped."
+}
+
+dwhere() {
+    if [ -z "$1" ]; then
+        echo "Usage: dwhere <container_name_or_id>"
+        return 1
+    fi
+
+    local id
+    id=$(docker inspect --format '{{.Id}}' "$1" 2>/dev/null)
+    if [ -z "$id" ]; then
+        echo "Container not found: $1"
+        return 1
+    fi
+
+    # A missing label renders as the literal '<no value>', not as an empty string
+    local compose_dir compose_project compose_service
+    compose_dir=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$1")
+    compose_project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$1")
+    compose_service=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$1")
+
+    if [ -n "$compose_dir" ] && [ "$compose_dir" != "<no value>" ]; then
+        echo "Origin: docker-compose"
+        echo "Project:  $compose_project"
+        echo "Service:  $compose_service"
+        echo "Dir:      $compose_dir"
+    else
+        echo "Origin: plain docker run"
+
+        local image restart ports
+        image=$(docker inspect --format '{{.Config.Image}}' "$1")
+        restart=$(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$1")
+        ports=$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}  -p {{(index $b 0).HostPort}}:{{$p}} {{end}}' "$1")
+
+        echo ""
+        echo "Reconstructed command:"
+        printf "docker run -d \\\n"
+        [ -n "$ports" ]   && printf "%s\\\n" "$ports"
+        [ "$restart" != "no" ] && [ -n "$restart" ] && printf "  --restart %s \\\n" "$restart"
+        printf "  %s\n" "$image"
+    fi
+
+    echo ""
+    echo "Created:  $(docker inspect --format '{{.Created}}' "$1")"
+    echo "Started:  $(docker inspect --format '{{.State.StartedAt}}' "$1")"
+}

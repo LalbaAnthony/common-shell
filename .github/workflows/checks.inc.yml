@@ -1,0 +1,68 @@
+name: Checks (reusable)
+
+# Reusable workflow: runs only when a *.flow.yml calls it, never on its own.
+#
+# Every job is a single call into .github/scripts/. check-all.sh runs the same
+# scripts locally, under the same check names, from the pre-commit and
+# pre-push hooks in .githooks/.
+#
+# The version pins live here, not in the caller: a caller's workflow-level
+# `env` does not reach a called workflow. No `concurrency` here either: the
+# caller owns it, and the same group in both deadlocks the run.
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  SHELLCHECK_VERSION: v0.11.0
+  PSSA_VERSION: 1.25.0
+
+jobs:
+  manifests:
+    name: Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/check-manifests.sh
+
+  bash-syntax:
+    name: Syntax (bash -n)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/check-syntax-bash.sh
+
+  bash-lint:
+    name: ShellCheck (bash)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/lint-bash.sh
+
+  pwsh-syntax:
+    name: Syntax (Windows PowerShell 5.1)
+    # The only runner with Windows PowerShell: the profile must load under 5.1,
+    # whose parser rejects syntax PowerShell 7 accepts.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: powershell
+        run: ./.github/scripts/check-syntax-pwsh.ps1
+
+  pwsh-lint:
+    name: PSScriptAnalyzer (powershell)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/powershell/Modules
+          key: pssa-${{ runner.os }}-${{ env.PSSA_VERSION }}
+
+      - shell: pwsh
+        run: ./.github/scripts/lint-pwsh.ps1

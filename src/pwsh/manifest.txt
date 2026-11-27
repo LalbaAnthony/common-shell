@@ -1,0 +1,33 @@
+# Concatenation order for $HOME/profile_extra.ps1, top to bottom.
+#
+# One filename per line, relative to src/pwsh/. Blank lines and everything
+# after a '#' are ignored. Filenames must not contain whitespace.
+#
+# The leading digit encodes shell coverage:
+#   0NN  section exists in BOTH shells - the same 0NN number names the same
+#        section in src/bash/, so a missing counterpart is visible at a glance
+#   1NN  Bash only (never appears in this file)
+#   2NN  PowerShell only
+# Within a band the number steps by 10, leaving room to insert.
+#
+# Every *.ps1 file in this directory must be listed here exactly once:
+# .github/scripts/check-manifests.sh fails the build otherwise, because an
+# unlisted part is silently dropped from every install.
+
+# -------- 0NN: shared with Bash --------
+000-core.ps1
+001-self.ps1
+002-random.ps1
+003-network.ps1
+004-python.ps1
+005-node.ps1
+006-git.ps1
+007-claude.ps1
+008-docker.ps1
+009-aliases.ps1
+010-env.ps1
+011-agoravita.ps1
+
+# -------- 2NN: PowerShell only --------
+202-vscode.ps1
+203-sleep.ps1

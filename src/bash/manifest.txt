@@ -1,0 +1,38 @@
+# Concatenation order for ~/.bashrc_extra, top to bottom.
+#
+# One filename per line, relative to src/bash/. Blank lines and everything
+# after a '#' are ignored. Filenames must not contain whitespace.
+#
+# The leading digit encodes shell coverage:
+#   0NN  section exists in BOTH shells - the same 0NN number names the same
+#        section in src/pwsh/, so a missing counterpart is visible at a glance
+#   1NN  Bash only
+#   2NN  PowerShell only (never appears in this file)
+# Within a band the number steps by 10, leaving room to insert.
+#
+# Every *.sh file in this directory must be listed here exactly once:
+# .github/scripts/check-manifests.sh fails the build otherwise, because an
+# unlisted part is silently dropped from every install.
+
+# -------- 0NN: shared with PowerShell --------
+000-core.sh
+001-self.sh
+002-random.sh
+003-network.sh
+004-python.sh
+005-node.sh
+006-git.sh
+007-claude.sh
+008-docker.sh
+009-aliases.sh
+010-env.sh
+011-agoravita.sh
+
+# -------- 1NN: Bash only --------
+101-apache.sh
+102-sql.sh
+103-certbot.sh
+104-php.sh
+105-laravel.sh
+109-wordpress.sh
+110-ssh.sh

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Runs every CI check against the snapshot about to be committed.
+# Enable once per clone: git config core.hooksPath .githooks
+# Bypass: git commit --no-verify
+
+set -euo pipefail
+
+exec "$BASH" "$(git rev-parse --show-toplevel)/.github/scripts/check-all.sh" --staged

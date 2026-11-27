@@ -1,0 +1,68 @@
+# shellcheck shell=bash
+# shellcheck disable=SC1091,SC2034,SC2142,SC2154
+
+alias art='php artisan'
+
+artlogs() {
+    tail -f storage/logs/laravel.log | grep --color=always -E "ERROR|CRITICAL|ALERT|EMERGENCY"
+}
+
+artq() {
+    php artisan queue:work --stop-when-empty
+
+    echo "Remaining jobs in the queue:"
+    php artisan tinker --execute="echo DB::table('jobs')->count();"
+}
+
+artperms() {
+    local WEB_USER=${CSH_WEB_USER:-www-data}
+
+    # ! This may be catched by git and show as changes, if git core.fileMode is true in this repo
+    sudo chown -R "$WEB_USER:$WEB_USER" public storage bootstrap/cache || return
+    sudo chmod -R 775 public storage bootstrap/cache
+}
+
+artdeps() {
+    if [ -f "package-lock.json" ]; then
+        rm -rf node_modules
+        npm i
+        echo "Node modules installed"
+    fi
+
+    if [ -f "composer.lock" ]; then
+        rm -rf vendor
+        composer install
+        echo "Composer dependencies installed"
+    fi
+}
+
+artclear() {
+    rm -rf .vite .cache
+    php artisan cache:clear
+    php artisan config:clear
+    php artisan view:clear
+    php artisan route:clear
+    php artisan optimize:clear
+    php artisan config:cache
+}
+
+artdb() {
+    php artisan migrate:fresh
+    php artisan db:seed
+}
+
+artreset() {
+    artdeps
+    echo "Dependencies installed"
+
+    artclear
+    echo "Cache cleared"
+
+    artdb
+    echo "Database reset and seeded"
+
+    php artisan storage:link
+    php artisan key:generate
+    : > storage/logs/laravel.log # Clear the Laravel log file
+    echo "Storage linked and app key generated"
+}
