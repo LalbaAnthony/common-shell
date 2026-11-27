@@ -43,10 +43,9 @@ function crij {
 
 #  -------- Kronos --------
 
-# Run a command in every 3M site: `3m git status -sb`, or `3m { git pull; composer install }`
-function 3m {
+function 3M {
     if ($args.Count -eq 0) {
-        Write-Host "Usage: 3m <command> [args...]"
+        Write-Host "Usage: 3M <command> [args...]"
         return
     }
 

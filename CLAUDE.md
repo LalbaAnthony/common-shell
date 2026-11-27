@@ -189,7 +189,7 @@ Ask "would I ever want this in the other shell?", not "have I written it yet?".
 
 **Promoting a section from shell-specific to shared** (say, porting `102-sql.sh` to PowerShell) is a rename plus two manifest edits: move it to the next free `0NN` in *both* directories and update both manifests. `6c2f0d5` did exactly this for agoravita (`190-` → `011-`). Renaming and updating the manifest are not optional — `check-manifests.sh` fails the build if a part is not listed, and the install 404s if the manifest names a file that is not there.
 
-**What is not enforced.** `check-manifests.sh` verifies that each manifest matches its own directory. It does **not** check the pairing rule — nothing fails the build when `0NN-foo.sh` exists without `0NN-foo.ps1`, when the same `0NN` names different sections on the two sides, or when a part sits in the wrong band. That is a convention held by hand and by review. Pairing guarantees a counterpart *file*, not equal content: `011-agoravita.sh` defines `crij`, `3m`, `kwc`, `kdev`, `kfbuild`, `atld`, `wpset`, `devs`, `rrelay`; `011-agoravita.ps1` only `crij`, `3m`, `rrelay`.
+**What is not enforced.** `check-manifests.sh` verifies that each manifest matches its own directory. It does **not** check the pairing rule — nothing fails the build when `0NN-foo.sh` exists without `0NN-foo.ps1`, when the same `0NN` names different sections on the two sides, or when a part sits in the wrong band. That is a convention held by hand and by review. Pairing guarantees a counterpart *file*, not equal content: `011-agoravita.sh` defines `crij`, `3M`, `kwc`, `kdev`, `kfbuild`, `atld`, `wpset`, `devs`, `rrelay`; `011-agoravita.ps1` only `crij`, `3M`, `rrelay`.
 
 ## Testing
 

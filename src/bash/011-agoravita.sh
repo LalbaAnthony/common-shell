@@ -13,7 +13,7 @@ crij() {
 
 #  -------- Kronos --------
 
-3m() {
+3M() {
     local dir
     for dir in /var/www/html/3-{mousses,mousquetons}; do
         echo "=== $(basename "$dir") ==="
